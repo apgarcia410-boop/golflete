@@ -23,7 +23,7 @@ type PlannedExercise = {
   target_reps: string | null;
   target_rpe: number | null;
   notes: string | null;
-  exercise_library: { name: string } | null;
+  exercise_name: string;
 };
 
 function TrainContent() {
@@ -76,16 +76,27 @@ function TrainContent() {
 
     supabase
       .from("program_exercises")
-      .select(
-        "id, exercise_id, order_index, target_sets, target_reps, target_rpe, notes, exercise_library(name)"
-      )
+      .select("id, exercise_id, order_index, target_sets, target_reps, target_rpe, notes")
       .eq("program_workout_id", workoutId)
       .order("order_index")
-      .then(({ data }) => {
-        if (data) {
-          setPlanned(data as unknown as PlannedExercise[]);
-          if (data.length > 0) setSelectedExerciseId((data[0] as any).exercise_id);
-        }
+      .then(async ({ data: rows }) => {
+        if (!rows || rows.length === 0) return;
+
+        const exerciseIds = Array.from(new Set(rows.map((r) => r.exercise_id)));
+        const { data: names } = await supabase
+          .from("exercise_library")
+          .select("id, name")
+          .in("id", exerciseIds);
+
+        const nameById = new Map((names ?? []).map((n) => [n.id, n.name]));
+
+        const merged: PlannedExercise[] = rows.map((r) => ({
+          ...r,
+          exercise_name: nameById.get(r.exercise_id) ?? "Unknown exercise",
+        }));
+
+        setPlanned(merged);
+        setSelectedExerciseId(merged[0].exercise_id);
       });
   }, [supabase, workoutId]);
 
@@ -168,7 +179,7 @@ function TrainContent() {
                 <p className="text-sm opacity-70 mb-1">Planned for this session</p>
                 {planned.map((p) => (
                   <p key={p.id} className="text-sm">
-                    {p.exercise_library?.name}
+                    {p.exercise_name}
                     {p.target_sets ? ` — ${p.target_sets} × ${p.target_reps ?? "?"}` : ""}
                     {p.target_rpe ? ` @ RPE ${p.target_rpe}` : ""}
                     {p.notes ? (
@@ -221,7 +232,7 @@ function TrainContent() {
                       }`}
                     >
                       <span>
-                        {p.exercise_library?.name}
+                        {p.exercise_name}
                         {p.target_sets ? ` — ${p.target_sets} × ${p.target_reps ?? "?"}` : ""}
                         {p.target_rpe ? ` @ RPE ${p.target_rpe}` : ""}
                       </span>
