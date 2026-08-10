@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
+import { useSearchParams } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import NavBar from "@/components/NavBar";
 
@@ -14,9 +15,22 @@ type SetEntry = {
   rpe: number | null;
   notes: string | null;
 };
+type PlannedExercise = {
+  id: string;
+  exercise_id: string;
+  order_index: number;
+  target_sets: number | null;
+  target_reps: string | null;
+  target_rpe: number | null;
+  notes: string | null;
+  exercise_library: { name: string } | null;
+};
 
-export default function TrainPage() {
+function TrainContent() {
   const supabase = createClient();
+  const searchParams = useSearchParams();
+  const workoutId = searchParams.get("workout");
+
   const [exercises, setExercises] = useState<Exercise[]>([]);
   const [sessionId, setSessionId] = useState<string | null>(null);
   const [location, setLocation] = useState<"station" | "home">("home");
@@ -28,6 +42,10 @@ export default function TrainPage() {
   const [notes, setNotes] = useState("");
   const [saving, setSaving] = useState(false);
 
+  const [workoutTitle, setWorkoutTitle] = useState<string | null>(null);
+  const [workoutNotes, setWorkoutNotes] = useState<string | null>(null);
+  const [planned, setPlanned] = useState<PlannedExercise[]>([]);
+
   useEffect(() => {
     supabase
       .from("exercise_library")
@@ -36,10 +54,40 @@ export default function TrainPage() {
       .then(({ data }) => {
         if (data) {
           setExercises(data);
-          if (data.length > 0) setSelectedExerciseId(data[0].id);
+          if (data.length > 0 && !workoutId) setSelectedExerciseId(data[0].id);
         }
       });
-  }, [supabase]);
+  }, [supabase, workoutId]);
+
+  useEffect(() => {
+    if (!workoutId) return;
+
+    supabase
+      .from("program_workouts")
+      .select("title, notes")
+      .eq("id", workoutId)
+      .single()
+      .then(({ data }) => {
+        if (data) {
+          setWorkoutTitle(data.title);
+          setWorkoutNotes(data.notes);
+        }
+      });
+
+    supabase
+      .from("program_exercises")
+      .select(
+        "id, exercise_id, order_index, target_sets, target_reps, target_rpe, notes, exercise_library(name)"
+      )
+      .eq("program_workout_id", workoutId)
+      .order("order_index")
+      .then(({ data }) => {
+        if (data) {
+          setPlanned(data as unknown as PlannedExercise[]);
+          if (data.length > 0) setSelectedExerciseId((data[0] as any).exercise_id);
+        }
+      });
+  }, [supabase, workoutId]);
 
   async function startWorkout() {
     const {
@@ -49,7 +97,12 @@ export default function TrainPage() {
 
     const { data, error } = await supabase
       .from("workout_sessions")
-      .insert({ user_id: user.id, location, status: "in_progress" })
+      .insert({
+        user_id: user.id,
+        location,
+        status: "in_progress",
+        program_workout_id: workoutId || null,
+      })
       .select("id")
       .single();
 
@@ -97,14 +150,35 @@ export default function TrainPage() {
 
   const currentExerciseName = exercises.find((e) => e.id === selectedExerciseId)?.name;
 
+  function setsLoggedForExercise(exerciseId: string) {
+    return loggedSets.filter((s) => s.exercise_id === exerciseId).length;
+  }
+
   return (
     <div className="md:flex min-h-screen">
       <NavBar />
       <main className="flex-1 p-4 pb-24 md:pb-4 md:p-8 max-w-2xl">
-        <h1 className="text-2xl font-bold mb-4">Train</h1>
+        <h1 className="text-2xl font-bold mb-1">{workoutTitle ?? "Train"}</h1>
+        {workoutNotes && <p className="text-sm opacity-60 mb-4">{workoutNotes}</p>}
 
         {!sessionId ? (
           <div className="card p-4 space-y-3">
+            {planned.length > 0 && (
+              <div className="space-y-1 mb-2">
+                <p className="text-sm opacity-70 mb-1">Planned for this session</p>
+                {planned.map((p) => (
+                  <p key={p.id} className="text-sm">
+                    {p.exercise_library?.name}
+                    {p.target_sets ? ` — ${p.target_sets} × ${p.target_reps ?? "?"}` : ""}
+                    {p.target_rpe ? ` @ RPE ${p.target_rpe}` : ""}
+                    {p.notes ? (
+                      <span className="opacity-50"> ({p.notes})</span>
+                    ) : null}
+                  </p>
+                ))}
+              </div>
+            )}
+
             <p className="text-sm opacity-70">Where are you training today?</p>
             <div className="flex gap-2">
               <button
@@ -130,6 +204,37 @@ export default function TrainPage() {
           </div>
         ) : (
           <div className="space-y-4">
+            {planned.length > 0 && (
+              <div className="card p-4 space-y-2">
+                <p className="text-sm opacity-70 mb-1">Today's Plan</p>
+                {planned.map((p) => {
+                  const done = setsLoggedForExercise(p.exercise_id);
+                  const target = p.target_sets ?? 0;
+                  return (
+                    <button
+                      key={p.id}
+                      onClick={() => setSelectedExerciseId(p.exercise_id)}
+                      className={`w-full text-left px-3 py-2 rounded-card border text-sm flex justify-between ${
+                        selectedExerciseId === p.exercise_id
+                          ? "border-primary text-primary"
+                          : "border-white/10"
+                      }`}
+                    >
+                      <span>
+                        {p.exercise_library?.name}
+                        {p.target_sets ? ` — ${p.target_sets} × ${p.target_reps ?? "?"}` : ""}
+                        {p.target_rpe ? ` @ RPE ${p.target_rpe}` : ""}
+                      </span>
+                      <span className="opacity-60">
+                        {done}
+                        {target ? `/${target}` : ""}
+                      </span>
+                    </button>
+                  );
+                })}
+              </div>
+            )}
+
             <div className="card p-4 space-y-3">
               <label className="block text-sm opacity-70">Exercise</label>
               <select
@@ -210,5 +315,13 @@ export default function TrainPage() {
         )}
       </main>
     </div>
+  );
+}
+
+export default function TrainPage() {
+  return (
+    <Suspense fallback={<div className="p-8">Loading…</div>}>
+      <TrainContent />
+    </Suspense>
   );
 }
