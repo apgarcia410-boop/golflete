@@ -1,5 +1,6 @@
 import { createClient } from "@/lib/supabase/server";
 import NavBar from "@/components/NavBar";
+import Link from "next/link";
 
 export default async function ProgressPage() {
   const supabase = createClient();
@@ -31,6 +32,13 @@ export default async function ProgressPage() {
           Basic history for now — trend charts and PRs arrive in Phase 2.
         </p>
 
+        <Link
+          href="/program"
+          className="block card p-4 text-sm text-primary underline"
+        >
+          Browse the full 6-week program →
+        </Link>
+
         <section className="card p-4">
           <h2 className="font-semibold mb-3">Recent Body Stats</h2>
           {weights && weights.length > 0 ? (
@@ -55,13 +63,18 @@ export default async function ProgressPage() {
           {sessions && sessions.length > 0 ? (
             <ul className="space-y-1 text-sm">
               {sessions.map((s) => (
-                <li key={s.id} className="flex justify-between">
-                  <span className="opacity-60">
-                    {new Date(s.started_at).toLocaleDateString()}
-                  </span>
-                  <span>
-                    {s.location ?? "—"} · {s.status}
-                  </span>
+                <li key={s.id}>
+                  <Link
+                    href={`/workout/${s.id}`}
+                    className="flex justify-between hover:text-primary"
+                  >
+                    <span className="opacity-60">
+                      {new Date(s.started_at).toLocaleDateString()}
+                    </span>
+                    <span>
+                      {s.location ?? "—"} · {s.status}
+                    </span>
+                  </Link>
                 </li>
               ))}
             </ul>

@@ -1,5 +1,6 @@
 import { createClient } from "@/lib/supabase/server";
 import NavBar from "@/components/NavBar";
+import TodayLabel from "@/components/TodayLabel";
 import Link from "next/link";
 
 type ProgramWorkout = {
@@ -107,13 +108,7 @@ export default async function DashboardPage() {
       <NavBar />
       <main className="flex-1 p-4 pb-24 md:pb-4 md:p-8 max-w-2xl">
         <h1 className="text-2xl font-bold mb-1">Today</h1>
-        <p className="opacity-60 text-sm mb-6">
-          {new Date().toLocaleDateString(undefined, {
-            weekday: "long",
-            month: "long",
-            day: "numeric",
-          })}
-        </p>
+        <TodayLabel />
 
         <div className="grid grid-cols-2 gap-3 mb-6">
           <div className="card p-4">
@@ -172,9 +167,15 @@ export default async function DashboardPage() {
               </p>
               <Link
                 href={`/train?workout=${programStatus.nextWorkout.id}`}
-                className="btn-primary inline-block px-4 py-2 text-sm"
+                className="btn-primary inline-block px-4 py-2 text-sm mr-2"
               >
                 Start This Workout
+              </Link>
+              <Link
+                href="/program"
+                className="inline-block px-4 py-2 text-sm underline opacity-70"
+              >
+                Preview Full Program
               </Link>
             </>
           )}

@@ -4,9 +4,20 @@ import { useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import NavBar from "@/components/NavBar";
 
+function getLocalDateString() {
+  // Builds YYYY-MM-DD from the device's local time, not UTC —
+  // toISOString() would shift the date near midnight depending
+  // on how far the local timezone is from UTC.
+  const d = new Date();
+  const year = d.getFullYear();
+  const month = String(d.getMonth() + 1).padStart(2, "0");
+  const day = String(d.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
+}
+
 export default function TrackPage() {
   const supabase = createClient();
-  const today = new Date().toISOString().slice(0, 10);
+  const today = getLocalDateString();
 
   const [weight, setWeight] = useState("");
   const [waist, setWaist] = useState("");

@@ -180,7 +180,7 @@ function TrainContent() {
                 {planned.map((p) => (
                   <p key={p.id} className="text-sm">
                     {p.exercise_name}
-                    {p.target_sets ? ` — ${p.target_sets} × ${p.target_reps ?? "?"}` : ""}
+                    {p.target_sets ? (p.target_reps ? ` — ${p.target_sets} × ${p.target_reps}` : ` — ${p.target_sets} sets`) : ""}
                     {p.target_rpe ? ` @ RPE ${p.target_rpe}` : ""}
                     {p.notes ? (
                       <span className="opacity-50"> ({p.notes})</span>
@@ -233,7 +233,7 @@ function TrainContent() {
                     >
                       <span>
                         {p.exercise_name}
-                        {p.target_sets ? ` — ${p.target_sets} × ${p.target_reps ?? "?"}` : ""}
+                        {p.target_sets ? (p.target_reps ? ` — ${p.target_sets} × ${p.target_reps}` : ` — ${p.target_sets} sets`) : ""}
                         {p.target_rpe ? ` @ RPE ${p.target_rpe}` : ""}
                       </span>
                       <span className="opacity-60">

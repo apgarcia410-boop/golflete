@@ -1,7 +1,9 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { createClient } from "@/lib/supabase/client";
 
 const TABS = [
   { href: "/dashboard", label: "Today" },
@@ -13,10 +15,36 @@ const TABS = [
 
 export default function NavBar() {
   const pathname = usePathname();
+  const [logoUrl, setLogoUrl] = useState<string | null>(null);
+
+  useEffect(() => {
+    const supabase = createClient();
+    async function loadLogo() {
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+      if (!user) return;
+      const { data } = await supabase
+        .from("brand_settings")
+        .select("logo_url")
+        .eq("user_id", user.id)
+        .maybeSingle();
+      if (data?.logo_url) setLogoUrl(data.logo_url);
+    }
+    loadLogo();
+  }, []);
 
   return (
     <>
-      {/* Mobile: bottom tab bar */}
+      {/* Mobile: top bar with logo + bottom tab bar */}
+      <header className="md:hidden flex items-center gap-2 px-4 py-3 border-b border-white/10">
+        {logoUrl ? (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img src={logoUrl} alt="Logo" className="h-8 object-contain" />
+        ) : (
+          <span className="font-bold">Golf Athlete</span>
+        )}
+      </header>
       <nav className="fixed bottom-0 left-0 right-0 md:hidden card border-t border-white/10 flex justify-around py-2 z-50">
         {TABS.map((tab) => {
           const active = pathname?.startsWith(tab.href);
@@ -36,7 +64,14 @@ export default function NavBar() {
 
       {/* Desktop: left sidebar */}
       <nav className="hidden md:flex md:flex-col md:w-56 md:min-h-screen card border-r border-white/10 p-4 gap-2">
-        <p className="text-lg font-bold mb-4">Golf Athlete</p>
+        <div className="mb-4">
+          {logoUrl ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img src={logoUrl} alt="Logo" className="h-10 object-contain" />
+          ) : (
+            <p className="text-lg font-bold">Golf Athlete</p>
+          )}
+        </div>
         {TABS.map((tab) => {
           const active = pathname?.startsWith(tab.href);
           return (
