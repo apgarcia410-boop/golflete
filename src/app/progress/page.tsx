@@ -17,7 +17,7 @@ export default async function ProgressPage() {
       .limit(10),
     supabase
       .from("workout_sessions")
-      .select("id, status, started_at, completed_at, location")
+      .select("id, status, started_at, completed_at, location, duration_minutes")
       .eq("user_id", user!.id)
       .order("started_at", { ascending: false })
       .limit(10),
@@ -73,6 +73,7 @@ export default async function ProgressPage() {
                     </span>
                     <span>
                       {s.location ?? "—"} · {s.status}
+                    {s.duration_minutes ? ` · ${s.duration_minutes} min` : ""}
                     </span>
                   </Link>
                 </li>

@@ -14,6 +14,7 @@ type Session = {
   location: string | null;
   notes: string | null;
   program_workout_id: string | null;
+  duration_minutes: number | null;
 };
 
 type SetRow = {
@@ -43,6 +44,7 @@ export default function WorkoutDetailPage({ params }: { params: { id: string } }
 
   const [sessionNotes, setSessionNotes] = useState("");
   const [sessionLocation, setSessionLocation] = useState<"station" | "home">("home");
+  const [sessionDuration, setSessionDuration] = useState("");
   const [confirmDelete, setConfirmDelete] = useState(false);
 
   async function loadAll() {
@@ -56,6 +58,7 @@ export default function WorkoutDetailPage({ params }: { params: { id: string } }
     setSession(sessionData as Session);
     setSessionNotes(sessionData.notes ?? "");
     setSessionLocation((sessionData.location as "station" | "home") ?? "home");
+    setSessionDuration(sessionData.duration_minutes?.toString() ?? "");
 
     if (sessionData.program_workout_id) {
       const { data: pw } = await supabase
@@ -120,7 +123,11 @@ export default function WorkoutDetailPage({ params }: { params: { id: string } }
   async function saveSessionInfo() {
     await supabase
       .from("workout_sessions")
-      .update({ notes: sessionNotes || null, location: sessionLocation })
+      .update({
+        notes: sessionNotes || null,
+        location: sessionLocation,
+        duration_minutes: sessionDuration ? parseInt(sessionDuration) : null,
+      })
       .eq("id", params.id);
     loadAll();
   }
@@ -168,6 +175,7 @@ export default function WorkoutDetailPage({ params }: { params: { id: string } }
             })}
             {" · "}
             {session.status}
+            {session.duration_minutes ? ` · ${session.duration_minutes} min` : ""}
           </p>
         </div>
 
@@ -190,6 +198,16 @@ export default function WorkoutDetailPage({ params }: { params: { id: string } }
             >
               Station
             </button>
+          </div>
+          <div>
+            <label className="block text-sm opacity-70 mb-1">Duration (minutes)</label>
+            <input
+              type="number"
+              inputMode="numeric"
+              value={sessionDuration}
+              onChange={(e) => setSessionDuration(e.target.value)}
+              className="w-full bg-background border border-white/10 rounded-card px-3 py-2"
+            />
           </div>
           <textarea
             value={sessionNotes}

@@ -46,6 +46,26 @@ function TrainContent() {
   const [workoutNotes, setWorkoutNotes] = useState<string | null>(null);
   const [planned, setPlanned] = useState<PlannedExercise[]>([]);
 
+  const [startedAtMs, setStartedAtMs] = useState<number | null>(null);
+  const [elapsedSeconds, setElapsedSeconds] = useState(0);
+
+  useEffect(() => {
+    if (!startedAtMs) return;
+    const interval = setInterval(() => {
+      setElapsedSeconds(Math.floor((Date.now() - startedAtMs) / 1000));
+    }, 1000);
+    return () => clearInterval(interval);
+  }, [startedAtMs]);
+
+  function formatElapsed(totalSeconds: number) {
+    const h = Math.floor(totalSeconds / 3600);
+    const m = Math.floor((totalSeconds % 3600) / 60);
+    const s = totalSeconds % 60;
+    const mm = String(m).padStart(2, "0");
+    const ss = String(s).padStart(2, "0");
+    return h > 0 ? `${h}:${mm}:${ss}` : `${mm}:${ss}`;
+  }
+
   useEffect(() => {
     supabase
       .from("exercise_library")
@@ -117,7 +137,11 @@ function TrainContent() {
       .select("id")
       .single();
 
-    if (!error && data) setSessionId(data.id);
+    if (!error && data) {
+      setSessionId(data.id);
+      setStartedAtMs(Date.now());
+      setElapsedSeconds(0);
+    }
   }
 
   async function logSet() {
@@ -151,12 +175,19 @@ function TrainContent() {
 
   async function finishWorkout() {
     if (!sessionId) return;
+    const durationMinutes = Math.max(1, Math.round(elapsedSeconds / 60));
     await supabase
       .from("workout_sessions")
-      .update({ status: "completed", completed_at: new Date().toISOString() })
+      .update({
+        status: "completed",
+        completed_at: new Date().toISOString(),
+        duration_minutes: durationMinutes,
+      })
       .eq("id", sessionId);
     setSessionId(null);
     setLoggedSets([]);
+    setStartedAtMs(null);
+    setElapsedSeconds(0);
   }
 
   const currentExerciseName = exercises.find((e) => e.id === selectedExerciseId)?.name;
@@ -215,6 +246,13 @@ function TrainContent() {
           </div>
         ) : (
           <div className="space-y-4">
+            <div className="card p-4 text-center">
+              <p className="text-xs opacity-60 mb-1">Elapsed Time</p>
+              <p className="text-4xl font-bold tabular-nums">
+                {formatElapsed(elapsedSeconds)}
+              </p>
+            </div>
+
             {planned.length > 0 && (
               <div className="card p-4 space-y-2">
                 <p className="text-sm opacity-70 mb-1">Today's Plan</p>
