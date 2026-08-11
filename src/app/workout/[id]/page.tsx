@@ -149,7 +149,7 @@ export default function WorkoutDetailPage({ params }: { params: { id: string } }
   return (
     <div className="md:flex min-h-screen">
       <NavBar />
-      <main className="flex-1 p-4 pb-24 md:pb-4 md:p-8 max-w-2xl space-y-6">
+      <main className="flex-1 p-4 pb-36 md:pb-4 md:p-8 max-w-2xl space-y-6">
         <div>
           <Link href="/progress" className="text-sm opacity-60 underline">
             ← Back to Progress

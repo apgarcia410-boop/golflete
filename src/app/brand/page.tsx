@@ -158,7 +158,7 @@ export default function BrandPage() {
   return (
     <div className="md:flex min-h-screen">
       <NavBar />
-      <main className="flex-1 p-4 pb-24 md:pb-4 md:p-8 max-w-2xl space-y-6">
+      <main className="flex-1 p-4 pb-36 md:pb-4 md:p-8 max-w-2xl space-y-6">
         <h1 className="text-2xl font-bold">Brand & Appearance</h1>
 
         <section className="card p-4 space-y-3">

@@ -45,15 +45,18 @@ export default function NavBar() {
           <span className="font-bold">Golf Athlete</span>
         )}
       </header>
-      <nav className="fixed bottom-0 left-0 right-0 md:hidden card border-t border-white/10 flex justify-around py-2 z-50">
+      <nav
+        className="fixed bottom-0 left-0 right-0 md:hidden card border-t border-white/10 flex z-50"
+        style={{ paddingBottom: "env(safe-area-inset-bottom)" }}
+      >
         {TABS.map((tab) => {
           const active = pathname?.startsWith(tab.href);
           return (
             <Link
               key={tab.href}
               href={tab.href}
-              className={`text-xs px-3 py-1 rounded-card ${
-                active ? "text-primary font-semibold" : "opacity-60"
+              className={`flex-1 flex items-center justify-center text-center text-sm py-4 min-h-[56px] ${
+                active ? "text-primary font-semibold bg-primary/10" : "opacity-70"
               }`}
             >
               {tab.label}

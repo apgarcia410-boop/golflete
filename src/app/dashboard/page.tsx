@@ -106,7 +106,7 @@ export default async function DashboardPage() {
   return (
     <div className="md:flex min-h-screen">
       <NavBar />
-      <main className="flex-1 p-4 pb-24 md:pb-4 md:p-8 max-w-2xl">
+      <main className="flex-1 p-4 pb-36 md:pb-4 md:p-8 max-w-2xl">
         <h1 className="text-2xl font-bold mb-1">Today</h1>
         <TodayLabel />
 
