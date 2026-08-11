@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import NavBar from "@/components/NavBar";
+import Link from "next/link";
 
 const PRESETS: Record<string, Record<string, string>> = {
   performance: {
@@ -159,6 +160,9 @@ export default function BrandPage() {
     <div className="md:flex min-h-screen">
       <NavBar />
       <main className="flex-1 p-4 pb-36 md:pb-4 md:p-8 max-w-2xl space-y-6">
+        <Link href="/more" className="text-sm opacity-60 underline">
+          ← Back to More
+        </Link>
         <h1 className="text-2xl font-bold">Brand & Appearance</h1>
 
         <section className="card p-4 space-y-3">
