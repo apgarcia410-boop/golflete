@@ -37,7 +37,10 @@ export default function NavBar() {
   return (
     <>
       {/* Mobile: top bar with logo + bottom tab bar */}
-      <header className="md:hidden flex items-center gap-2 px-4 py-3 border-b border-white/10">
+      <header
+        className="md:hidden flex items-center gap-2 px-4 pb-3 border-b border-white/10"
+        style={{ paddingTop: "calc(0.75rem + env(safe-area-inset-top))" }}
+      >
         {logoUrl ? (
           // eslint-disable-next-line @next/next/no-img-element
           <img src={logoUrl} alt="Logo" className="h-8 object-contain" />
