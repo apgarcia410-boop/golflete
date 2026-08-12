@@ -31,8 +31,23 @@ export default function ProfilePage() {
         .from("profiles")
         .select("*")
         .eq("id", user.id)
-        .single();
-      if (data) setProfile(data as Profile);
+        .maybeSingle();
+
+      if (data) {
+        setProfile(data as Profile);
+      } else {
+        // No row yet (e.g. it never got created on signup) — start
+        // with a blank form instead of hanging on "Loading…" forever.
+        setProfile({
+          full_name: null,
+          height_inches: null,
+          current_weight_lb: null,
+          target_weight_lb: null,
+          target_body_fat_low: null,
+          target_body_fat_high: null,
+          schedule_type: "standard",
+        });
+      }
     }
     load();
   }, [supabase]);
@@ -48,26 +63,24 @@ export default function ProfilePage() {
       data: { user },
     } = await supabase.auth.getUser();
     if (user) {
-      await supabase
-        .from("profiles")
-        .update({
-          full_name: profile.full_name || null,
-          height_inches: profile.height_inches ? Number(profile.height_inches) : null,
-          current_weight_lb: profile.current_weight_lb
-            ? Number(profile.current_weight_lb)
-            : null,
-          target_weight_lb: profile.target_weight_lb
-            ? Number(profile.target_weight_lb)
-            : null,
-          target_body_fat_low: profile.target_body_fat_low
-            ? Number(profile.target_body_fat_low)
-            : null,
-          target_body_fat_high: profile.target_body_fat_high
-            ? Number(profile.target_body_fat_high)
-            : null,
-          schedule_type: profile.schedule_type || null,
-        })
-        .eq("id", user.id);
+      await supabase.from("profiles").upsert({
+        id: user.id,
+        full_name: profile.full_name || null,
+        height_inches: profile.height_inches ? Number(profile.height_inches) : null,
+        current_weight_lb: profile.current_weight_lb
+          ? Number(profile.current_weight_lb)
+          : null,
+        target_weight_lb: profile.target_weight_lb
+          ? Number(profile.target_weight_lb)
+          : null,
+        target_body_fat_low: profile.target_body_fat_low
+          ? Number(profile.target_body_fat_low)
+          : null,
+        target_body_fat_high: profile.target_body_fat_high
+          ? Number(profile.target_body_fat_high)
+          : null,
+        schedule_type: profile.schedule_type || null,
+      });
     }
     setSaving(false);
     setSavedMsg("Saved");
