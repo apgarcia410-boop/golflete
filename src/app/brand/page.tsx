@@ -172,6 +172,7 @@ export default function BrandPage() {
         .eq("user_id", user.id);
     }
     setUploading(false);
+  }
 
   if (!brand) {
     return (
