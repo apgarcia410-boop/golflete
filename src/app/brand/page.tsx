@@ -57,6 +57,7 @@ type Brand = {
   color_accent: string;
   color_text: string;
   logo_url: string | null;
+  app_icon_url: string | null;
 };
 
 export default function BrandPage() {
@@ -147,6 +148,31 @@ export default function BrandPage() {
     setUploading(false);
   }
 
+  async function handleAppIconUpload(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setUploading(true);
+
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+    if (!user) return;
+
+    const path = `${user.id}/app-icon-${Date.now()}.${file.name.split(".").pop()}`;
+    const { error: uploadError } = await supabase.storage
+      .from("brand-assets")
+      .upload(path, file, { upsert: true });
+
+    if (!uploadError) {
+      const { data: publicUrl } = supabase.storage.from("brand-assets").getPublicUrl(path);
+      applyLive({ app_icon_url: publicUrl.publicUrl });
+      await supabase
+        .from("brand_settings")
+        .update({ app_icon_url: publicUrl.publicUrl })
+        .eq("user_id", user.id);
+    }
+    setUploading(false);
+
   if (!brand) {
     return (
       <div className="md:flex min-h-screen">
@@ -208,12 +234,39 @@ export default function BrandPage() {
 
         <section className="card p-4 space-y-3">
           <h2 className="font-semibold">Logo</h2>
+          <p className="text-xs opacity-60">
+            Shown in the nav bar. Works well as a wide image, transparent background is fine.
+          </p>
           {brand.logo_url && (
             // eslint-disable-next-line @next/next/no-img-element
             <img src={brand.logo_url} alt="Logo" className="h-16 object-contain" />
           )}
           <input type="file" accept="image/png,image/jpeg,image/svg+xml" onChange={handleLogoUpload} />
           {uploading && <p className="text-sm opacity-60">Uploading…</p>}
+        </section>
+
+        <section className="card p-4 space-y-3">
+          <h2 className="font-semibold">App Icon</h2>
+          <p className="text-xs opacity-60">
+            Shown on your iPhone home screen when you "Add to Home Screen." Use a
+            square image with a solid background (no transparency) — iOS renders
+            transparent areas as black. 512×512 or larger recommended.
+          </p>
+          {brand.app_icon_url && (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img
+              src={brand.app_icon_url}
+              alt="App Icon"
+              className="h-20 w-20 object-cover rounded-2xl border border-white/10"
+            />
+          )}
+          <input type="file" accept="image/png,image/jpeg" onChange={handleAppIconUpload} />
+          {uploading && <p className="text-sm opacity-60">Uploading…</p>}
+          <p className="text-xs opacity-50">
+            After uploading, remove the app from your home screen and re-add it
+            (Share → Add to Home Screen) — iOS caches the icon at install time and
+            won't pick up a change otherwise.
+          </p>
         </section>
 
         <div className="flex gap-2">
