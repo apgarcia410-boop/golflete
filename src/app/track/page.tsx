@@ -19,18 +19,20 @@ function getLocalDateString() {
 type FoodLibraryItem = {
   id: string;
   name: string;
-  unit: string;
-  calories_per_unit: number;
-  protein_per_unit: number;
-  carbs_per_unit: number;
-  fat_per_unit: number;
+  serving_size_amount: number;
+  serving_size_unit: string;
+  calories_per_serving: number;
+  protein_per_serving: number;
+  carbs_per_serving: number;
+  fat_per_serving: number;
 };
 
 type MealEntry = {
   id: string;
   food_name: string;
-  amount: number;
-  unit: string;
+  servings: number | null;
+  serving_size_amount: number | null;
+  serving_size_unit: string | null;
   calories: number | null;
   protein_g: number | null;
   carbs_g: number | null;
@@ -70,12 +72,12 @@ export default function TrackPage() {
 
   // Library mode
   const [selectedFoodId, setSelectedFoodId] = useState("");
-  const [libraryAmount, setLibraryAmount] = useState("");
+  const [servingsConsumed, setServingsConsumed] = useState("1");
 
   // Quick-add mode
   const [quickName, setQuickName] = useState("");
-  const [quickAmount, setQuickAmount] = useState("");
-  const [quickUnit, setQuickUnit] = useState("");
+  const [quickServingAmount, setQuickServingAmount] = useState("");
+  const [quickServingUnit, setQuickServingUnit] = useState("");
   const [quickCalories, setQuickCalories] = useState("");
   const [quickProtein, setQuickProtein] = useState("");
   const [quickCarbs, setQuickCarbs] = useState("");
@@ -95,7 +97,9 @@ export default function TrackPage() {
 
     const { data: lib } = await supabase
       .from("food_library")
-      .select("*")
+      .select(
+        "id, name, serving_size_amount, serving_size_unit, calories_per_serving, protein_per_serving, carbs_per_serving, fat_per_serving"
+      )
       .eq("user_id", userId)
       .order("name");
     if (lib) {
@@ -105,7 +109,9 @@ export default function TrackPage() {
 
     const { data: meals } = await supabase
       .from("meal_entries")
-      .select("id, food_name, amount, unit, calories, protein_g, carbs_g, fat_g")
+      .select(
+        "id, food_name, servings, serving_size_amount, serving_size_unit, calories, protein_g, carbs_g, fat_g"
+      )
       .eq("user_id", userId)
       .eq("logged_date", today)
       .order("logged_at");
@@ -150,23 +156,27 @@ export default function TrackPage() {
   async function addFromLibrary() {
     const userId = await getUserId();
     const food = library.find((f) => f.id === selectedFoodId);
-    if (!userId || !food || !libraryAmount) return;
+    if (!userId || !food || !servingsConsumed) return;
 
-    const amt = parseFloat(libraryAmount);
+    const servings = parseFloat(servingsConsumed);
     await supabase.from("meal_entries").insert({
       user_id: userId,
       logged_date: today,
       food_id: food.id,
       food_name: food.name,
-      amount: amt,
-      unit: food.unit,
-      calories: amt * food.calories_per_unit,
-      protein_g: amt * food.protein_per_unit,
-      carbs_g: amt * food.carbs_per_unit,
-      fat_g: amt * food.fat_per_unit,
+      servings,
+      serving_size_amount: food.serving_size_amount,
+      serving_size_unit: food.serving_size_unit,
+      calories: servings * food.calories_per_serving,
+      protein_g: servings * food.protein_per_serving,
+      carbs_g: servings * food.carbs_per_serving,
+      fat_g: servings * food.fat_per_serving,
+      // legacy columns, kept satisfied for backward compatibility
+      amount: servings * food.serving_size_amount,
+      unit: food.serving_size_unit,
     });
 
-    setLibraryAmount("");
+    setServingsConsumed("1");
     setSavedMsg(`Logged ${food.name}`);
     loadNutrition();
   }
@@ -175,7 +185,7 @@ export default function TrackPage() {
     const userId = await getUserId();
     if (!userId || !quickName) return;
 
-    const amt = quickAmount ? parseFloat(quickAmount) : null;
+    const servingAmt = quickServingAmount ? parseFloat(quickServingAmount) : 1;
     const cal = quickCalories ? parseFloat(quickCalories) : null;
     const pro = quickProtein ? parseFloat(quickProtein) : null;
     const carb = quickCarbs ? parseFloat(quickCarbs) : null;
@@ -186,29 +196,40 @@ export default function TrackPage() {
       logged_date: today,
       food_id: null,
       food_name: quickName,
-      amount: amt ?? 1,
-      unit: quickUnit || "serving",
+      servings: 1,
+      serving_size_amount: servingAmt,
+      serving_size_unit: quickServingUnit || "serving",
       calories: cal,
       protein_g: pro,
       carbs_g: carb,
       fat_g: fat,
+      // legacy columns
+      amount: servingAmt,
+      unit: quickServingUnit || "serving",
     });
 
-    if (rememberFood && amt && amt > 0) {
+    if (rememberFood) {
       await supabase.from("food_library").insert({
         user_id: userId,
         name: quickName,
-        unit: quickUnit || "serving",
-        calories_per_unit: cal ? cal / amt : 0,
-        protein_per_unit: pro ? pro / amt : 0,
-        carbs_per_unit: carb ? carb / amt : 0,
-        fat_per_unit: fat ? fat / amt : 0,
+        serving_size_amount: servingAmt,
+        serving_size_unit: quickServingUnit || "serving",
+        calories_per_serving: cal ?? 0,
+        protein_per_serving: pro ?? 0,
+        carbs_per_serving: carb ?? 0,
+        fat_per_serving: fat ?? 0,
+        // legacy columns
+        unit: quickServingUnit || "serving",
+        calories_per_unit: 0,
+        protein_per_unit: 0,
+        carbs_per_unit: 0,
+        fat_per_unit: 0,
       });
     }
 
     setQuickName("");
-    setQuickAmount("");
-    setQuickUnit("");
+    setQuickServingAmount("");
+    setQuickServingUnit("");
     setQuickCalories("");
     setQuickProtein("");
     setQuickCarbs("");
@@ -251,7 +272,7 @@ export default function TrackPage() {
   );
 
   const selectedFood = library.find((f) => f.id === selectedFoodId);
-  const previewAmount = libraryAmount ? parseFloat(libraryAmount) : 0;
+  const previewServings = servingsConsumed ? parseFloat(servingsConsumed) : 0;
 
   function macroRow(label: string, consumed: number, target: number | null) {
     return (
@@ -315,7 +336,11 @@ export default function TrackPage() {
               {todaysMeals.map((m) => (
                 <div key={m.id} className="flex justify-between items-center text-sm">
                   <span>
-                    {m.food_name} — {m.amount}{m.unit}
+                    {m.food_name}
+                    {m.servings ? ` — ${m.servings} serving${m.servings === 1 ? "" : "s"}` : ""}
+                    {m.serving_size_amount && m.serving_size_unit
+                      ? ` (${Math.round((m.servings ?? 1) * m.serving_size_amount)}${m.serving_size_unit})`
+                      : ""}
                   </span>
                   <span className="flex items-center gap-2">
                     <span className="opacity-60">{Math.round(m.calories ?? 0)} cal</span>
@@ -362,23 +387,34 @@ export default function TrackPage() {
                 >
                   {library.map((f) => (
                     <option key={f.id} value={f.id}>
-                      {f.name} (per {f.unit})
+                      {f.name} (1 serving = {f.serving_size_amount}{f.serving_size_unit})
                     </option>
                   ))}
                 </select>
-                <input
-                  placeholder={`Amount (${selectedFood?.unit ?? "unit"})`}
-                  inputMode="decimal"
-                  value={libraryAmount}
-                  onChange={(e) => setLibraryAmount(e.target.value)}
-                  className="w-full bg-background border border-white/10 rounded-card px-3 py-2 text-center"
-                />
-                {selectedFood && previewAmount > 0 && (
+                <div>
+                  <label className="block text-xs opacity-60 mb-1">
+                    Number of servings
+                    {selectedFood
+                      ? ` (1 serving = ${selectedFood.serving_size_amount}${selectedFood.serving_size_unit})`
+                      : ""}
+                  </label>
+                  <input
+                    placeholder="e.g. 1, 1.5, 2"
+                    inputMode="decimal"
+                    value={servingsConsumed}
+                    onChange={(e) => setServingsConsumed(e.target.value)}
+                    className="w-full bg-background border border-white/10 rounded-card px-3 py-2 text-center"
+                  />
+                </div>
+                {selectedFood && previewServings > 0 && (
                   <p className="text-xs opacity-60">
-                    ≈ {Math.round(previewAmount * selectedFood.calories_per_unit)} cal ·{" "}
-                    {Math.round(previewAmount * selectedFood.protein_per_unit)}g protein ·{" "}
-                    {Math.round(previewAmount * selectedFood.carbs_per_unit)}g carbs ·{" "}
-                    {Math.round(previewAmount * selectedFood.fat_per_unit)}g fat
+                    {previewServings} serving{previewServings === 1 ? "" : "s"} ={" "}
+                    {Math.round(previewServings * selectedFood.serving_size_amount)}
+                    {selectedFood.serving_size_unit} → ≈{" "}
+                    {Math.round(previewServings * selectedFood.calories_per_serving)} cal ·{" "}
+                    {Math.round(previewServings * selectedFood.protein_per_serving)}g protein ·{" "}
+                    {Math.round(previewServings * selectedFood.carbs_per_serving)}g carbs ·{" "}
+                    {Math.round(previewServings * selectedFood.fat_per_serving)}g fat
                   </p>
                 )}
                 <button onClick={addFromLibrary} className="btn-primary w-full py-2">
@@ -394,23 +430,24 @@ export default function TrackPage() {
                 onChange={(e) => setQuickName(e.target.value)}
                 className="w-full bg-background border border-white/10 rounded-card px-3 py-2"
               />
+              <p className="text-xs opacity-60">How much are you eating right now?</p>
               <div className="grid grid-cols-2 gap-2">
                 <input
-                  placeholder="Amount (e.g. 8)"
+                  placeholder="Amount (e.g. 4)"
                   inputMode="decimal"
-                  value={quickAmount}
-                  onChange={(e) => setQuickAmount(e.target.value)}
+                  value={quickServingAmount}
+                  onChange={(e) => setQuickServingAmount(e.target.value)}
                   className="bg-background border border-white/10 rounded-card px-2 py-2 text-center"
                 />
                 <input
                   placeholder="Unit (e.g. oz)"
-                  value={quickUnit}
-                  onChange={(e) => setQuickUnit(e.target.value)}
+                  value={quickServingUnit}
+                  onChange={(e) => setQuickServingUnit(e.target.value)}
                   className="bg-background border border-white/10 rounded-card px-2 py-2 text-center"
                 />
               </div>
               <p className="text-xs opacity-60">
-                Enter the total macros for that amount (not per-unit):
+                Total macros for that exact amount:
               </p>
               <div className="grid grid-cols-2 gap-2">
                 <input placeholder="Calories" inputMode="decimal" value={quickCalories}
@@ -432,7 +469,8 @@ export default function TrackPage() {
                   checked={rememberFood}
                   onChange={(e) => setRememberFood(e.target.checked)}
                 />
-                Remember this food for next time (needs an amount + unit above)
+                Remember this food (saves "{quickServingAmount || "?"}
+                {quickServingUnit || "unit"}" as its serving size for next time)
               </label>
               <button onClick={addQuick} className="btn-primary w-full py-2">
                 Add to Today
