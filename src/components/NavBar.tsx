@@ -38,14 +38,14 @@ export default function NavBar() {
     <>
       {/* Mobile: top bar with logo + bottom tab bar */}
       <header
-        className="md:hidden flex items-center gap-2 px-4 pb-3 border-b border-white/10"
+        className="md:hidden sticky top-0 z-40 flex items-center justify-center px-4 pb-3 border-b border-white/10 bg-background"
         style={{ paddingTop: "calc(0.75rem + env(safe-area-inset-top))" }}
       >
         {logoUrl ? (
           // eslint-disable-next-line @next/next/no-img-element
-          <img src={logoUrl} alt="Logo" className="h-8 object-contain" />
+          <img src={logoUrl} alt="Logo" className="h-14 object-contain" />
         ) : (
-          <span className="font-bold">Golf Athlete</span>
+          <span className="font-bold text-lg">Golf Athlete</span>
         )}
       </header>
       <nav
