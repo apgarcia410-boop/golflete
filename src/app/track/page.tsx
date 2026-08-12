@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import NavBar from "@/components/NavBar";
+import Link from "next/link";
 
 function getLocalDateString() {
   // Builds YYYY-MM-DD from the device's local time, not UTC —
@@ -292,6 +293,10 @@ export default function TrackPage() {
 
         <section className="card p-4 space-y-3">
           <h2 className="font-semibold">Nutrition — Today</h2>
+
+          <Link href="/food-library" className="text-xs text-primary underline block">
+            Manage Food Library →
+          </Link>
 
           <div className="space-y-1 border-b border-white/10 pb-3 mb-1">
             {macroRow("Calories", totals.calories, targets?.target_calories ?? null)}
