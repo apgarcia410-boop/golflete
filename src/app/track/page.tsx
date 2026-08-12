@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import NavBar from "@/components/NavBar";
 
@@ -15,6 +15,34 @@ function getLocalDateString() {
   return `${year}-${month}-${day}`;
 }
 
+type FoodLibraryItem = {
+  id: string;
+  name: string;
+  unit: string;
+  calories_per_unit: number;
+  protein_per_unit: number;
+  carbs_per_unit: number;
+  fat_per_unit: number;
+};
+
+type MealEntry = {
+  id: string;
+  food_name: string;
+  amount: number;
+  unit: string;
+  calories: number | null;
+  protein_g: number | null;
+  carbs_g: number | null;
+  fat_g: number | null;
+};
+
+type Targets = {
+  target_calories: number | null;
+  target_protein_g: number | null;
+  target_carbs_g: number | null;
+  target_fat_g: number | null;
+};
+
 export default function TrackPage() {
   const supabase = createClient();
   const today = getLocalDateString();
@@ -23,10 +51,6 @@ export default function TrackPage() {
   const [waist, setWaist] = useState("");
   const [bodyFat, setBodyFat] = useState("");
 
-  const [calories, setCalories] = useState("");
-  const [protein, setProtein] = useState("");
-  const [carbs, setCarbs] = useState("");
-  const [fat, setFat] = useState("");
   const [water, setWater] = useState("");
 
   const [sleep, setSleep] = useState("");
@@ -36,12 +60,68 @@ export default function TrackPage() {
 
   const [savedMsg, setSavedMsg] = useState<string | null>(null);
 
+  // --- Nutrition state ---
+  const [library, setLibrary] = useState<FoodLibraryItem[]>([]);
+  const [todaysMeals, setTodaysMeals] = useState<MealEntry[]>([]);
+  const [targets, setTargets] = useState<Targets | null>(null);
+
+  const [mode, setMode] = useState<"library" | "quick">("library");
+
+  // Library mode
+  const [selectedFoodId, setSelectedFoodId] = useState("");
+  const [libraryAmount, setLibraryAmount] = useState("");
+
+  // Quick-add mode
+  const [quickName, setQuickName] = useState("");
+  const [quickAmount, setQuickAmount] = useState("");
+  const [quickUnit, setQuickUnit] = useState("");
+  const [quickCalories, setQuickCalories] = useState("");
+  const [quickProtein, setQuickProtein] = useState("");
+  const [quickCarbs, setQuickCarbs] = useState("");
+  const [quickFat, setQuickFat] = useState("");
+  const [rememberFood, setRememberFood] = useState(false);
+
   async function getUserId() {
     const {
       data: { user },
     } = await supabase.auth.getUser();
     return user?.id;
   }
+
+  async function loadNutrition() {
+    const userId = await getUserId();
+    if (!userId) return;
+
+    const { data: lib } = await supabase
+      .from("food_library")
+      .select("*")
+      .eq("user_id", userId)
+      .order("name");
+    if (lib) {
+      setLibrary(lib as FoodLibraryItem[]);
+      if (lib.length > 0 && !selectedFoodId) setSelectedFoodId(lib[0].id);
+    }
+
+    const { data: meals } = await supabase
+      .from("meal_entries")
+      .select("id, food_name, amount, unit, calories, protein_g, carbs_g, fat_g")
+      .eq("user_id", userId)
+      .eq("logged_date", today)
+      .order("logged_at");
+    if (meals) setTodaysMeals(meals as MealEntry[]);
+
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("target_calories, target_protein_g, target_carbs_g, target_fat_g")
+      .eq("id", userId)
+      .maybeSingle();
+    if (profile) setTargets(profile as Targets);
+  }
+
+  useEffect(() => {
+    loadNutrition();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   async function saveBody() {
     const userId = await getUserId();
@@ -56,22 +136,90 @@ export default function TrackPage() {
     setSavedMsg("Body stats saved");
   }
 
-  async function saveNutrition() {
+  async function saveWater() {
     const userId = await getUserId();
     if (!userId) return;
     await supabase.from("nutrition_logs").upsert(
-      {
-        user_id: userId,
-        logged_date: today,
-        calories: calories ? parseFloat(calories) : null,
-        protein_g: protein ? parseFloat(protein) : null,
-        carbs_g: carbs ? parseFloat(carbs) : null,
-        fat_g: fat ? parseFloat(fat) : null,
-        water_oz: water ? parseFloat(water) : null,
-      },
+      { user_id: userId, logged_date: today, water_oz: water ? parseFloat(water) : null },
       { onConflict: "user_id,logged_date" }
     );
-    setSavedMsg("Nutrition saved");
+    setSavedMsg("Water saved");
+  }
+
+  async function addFromLibrary() {
+    const userId = await getUserId();
+    const food = library.find((f) => f.id === selectedFoodId);
+    if (!userId || !food || !libraryAmount) return;
+
+    const amt = parseFloat(libraryAmount);
+    await supabase.from("meal_entries").insert({
+      user_id: userId,
+      logged_date: today,
+      food_id: food.id,
+      food_name: food.name,
+      amount: amt,
+      unit: food.unit,
+      calories: amt * food.calories_per_unit,
+      protein_g: amt * food.protein_per_unit,
+      carbs_g: amt * food.carbs_per_unit,
+      fat_g: amt * food.fat_per_unit,
+    });
+
+    setLibraryAmount("");
+    setSavedMsg(`Logged ${food.name}`);
+    loadNutrition();
+  }
+
+  async function addQuick() {
+    const userId = await getUserId();
+    if (!userId || !quickName) return;
+
+    const amt = quickAmount ? parseFloat(quickAmount) : null;
+    const cal = quickCalories ? parseFloat(quickCalories) : null;
+    const pro = quickProtein ? parseFloat(quickProtein) : null;
+    const carb = quickCarbs ? parseFloat(quickCarbs) : null;
+    const fat = quickFat ? parseFloat(quickFat) : null;
+
+    await supabase.from("meal_entries").insert({
+      user_id: userId,
+      logged_date: today,
+      food_id: null,
+      food_name: quickName,
+      amount: amt ?? 1,
+      unit: quickUnit || "serving",
+      calories: cal,
+      protein_g: pro,
+      carbs_g: carb,
+      fat_g: fat,
+    });
+
+    if (rememberFood && amt && amt > 0) {
+      await supabase.from("food_library").insert({
+        user_id: userId,
+        name: quickName,
+        unit: quickUnit || "serving",
+        calories_per_unit: cal ? cal / amt : 0,
+        protein_per_unit: pro ? pro / amt : 0,
+        carbs_per_unit: carb ? carb / amt : 0,
+        fat_per_unit: fat ? fat / amt : 0,
+      });
+    }
+
+    setQuickName("");
+    setQuickAmount("");
+    setQuickUnit("");
+    setQuickCalories("");
+    setQuickProtein("");
+    setQuickCarbs("");
+    setQuickFat("");
+    setRememberFood(false);
+    setSavedMsg(`Logged ${quickName}`);
+    loadNutrition();
+  }
+
+  async function deleteMeal(id: string) {
+    await supabase.from("meal_entries").delete().eq("id", id);
+    loadNutrition();
   }
 
   async function saveReadiness() {
@@ -89,6 +237,34 @@ export default function TrackPage() {
       { onConflict: "user_id,logged_date" }
     );
     setSavedMsg("Readiness saved");
+  }
+
+  const totals = todaysMeals.reduce(
+    (acc, m) => ({
+      calories: acc.calories + (m.calories ?? 0),
+      protein: acc.protein + (m.protein_g ?? 0),
+      carbs: acc.carbs + (m.carbs_g ?? 0),
+      fat: acc.fat + (m.fat_g ?? 0),
+    }),
+    { calories: 0, protein: 0, carbs: 0, fat: 0 }
+  );
+
+  const selectedFood = library.find((f) => f.id === selectedFoodId);
+  const previewAmount = libraryAmount ? parseFloat(libraryAmount) : 0;
+
+  function macroRow(label: string, consumed: number, target: number | null) {
+    return (
+      <div className="flex justify-between text-sm">
+        <span className="opacity-70">{label}</span>
+        <span>
+          {Math.round(consumed)}
+          {target ? ` / ${target}` : ""}
+          {target ? (
+            <span className="opacity-50"> ({Math.round(target - consumed)} left)</span>
+          ) : null}
+        </span>
+      </div>
+    );
   }
 
   return (
@@ -115,25 +291,164 @@ export default function TrackPage() {
         </section>
 
         <section className="card p-4 space-y-3">
-          <h2 className="font-semibold">Nutrition</h2>
-          <div className="grid grid-cols-2 gap-2">
-            <input placeholder="Calories" inputMode="decimal" value={calories}
-              onChange={(e) => setCalories(e.target.value)}
-              className="bg-background border border-white/10 rounded-card px-2 py-2 text-center" />
-            <input placeholder="Protein (g)" inputMode="decimal" value={protein}
-              onChange={(e) => setProtein(e.target.value)}
-              className="bg-background border border-white/10 rounded-card px-2 py-2 text-center" />
-            <input placeholder="Carbs (g)" inputMode="decimal" value={carbs}
-              onChange={(e) => setCarbs(e.target.value)}
-              className="bg-background border border-white/10 rounded-card px-2 py-2 text-center" />
-            <input placeholder="Fat (g)" inputMode="decimal" value={fat}
-              onChange={(e) => setFat(e.target.value)}
-              className="bg-background border border-white/10 rounded-card px-2 py-2 text-center" />
-            <input placeholder="Water (oz)" inputMode="decimal" value={water}
-              onChange={(e) => setWater(e.target.value)}
-              className="col-span-2 bg-background border border-white/10 rounded-card px-2 py-2 text-center" />
+          <h2 className="font-semibold">Nutrition — Today</h2>
+
+          <div className="space-y-1 border-b border-white/10 pb-3 mb-1">
+            {macroRow("Calories", totals.calories, targets?.target_calories ?? null)}
+            {macroRow("Protein (g)", totals.protein, targets?.target_protein_g ?? null)}
+            {macroRow("Carbs (g)", totals.carbs, targets?.target_carbs_g ?? null)}
+            {macroRow("Fat (g)", totals.fat, targets?.target_fat_g ?? null)}
+            {!targets?.target_calories && (
+              <p className="text-xs opacity-50 pt-1">
+                Set daily targets on your Profile page to see remaining amounts.
+              </p>
+            )}
           </div>
-          <button onClick={saveNutrition} className="btn-primary w-full py-2">Save Nutrition</button>
+
+          {todaysMeals.length > 0 && (
+            <div className="space-y-1 border-b border-white/10 pb-3 mb-1">
+              {todaysMeals.map((m) => (
+                <div key={m.id} className="flex justify-between items-center text-sm">
+                  <span>
+                    {m.food_name} — {m.amount}{m.unit}
+                  </span>
+                  <span className="flex items-center gap-2">
+                    <span className="opacity-60">{Math.round(m.calories ?? 0)} cal</span>
+                    <button onClick={() => deleteMeal(m.id)} className="text-error underline">
+                      Delete
+                    </button>
+                  </span>
+                </div>
+              ))}
+            </div>
+          )}
+
+          <div className="flex gap-2">
+            <button
+              onClick={() => setMode("library")}
+              className={`flex-1 py-2 rounded-card border text-sm ${
+                mode === "library" ? "border-primary text-primary" : "border-white/10"
+              }`}
+            >
+              From Library
+            </button>
+            <button
+              onClick={() => setMode("quick")}
+              className={`flex-1 py-2 rounded-card border text-sm ${
+                mode === "quick" ? "border-primary text-primary" : "border-white/10"
+              }`}
+            >
+              Quick Add
+            </button>
+          </div>
+
+          {mode === "library" ? (
+            library.length === 0 ? (
+              <p className="text-sm opacity-60">
+                No foods saved yet — use Quick Add and check "remember this food" to
+                build your library.
+              </p>
+            ) : (
+              <div className="space-y-2">
+                <select
+                  value={selectedFoodId}
+                  onChange={(e) => setSelectedFoodId(e.target.value)}
+                  className="w-full bg-background border border-white/10 rounded-card px-3 py-2"
+                >
+                  {library.map((f) => (
+                    <option key={f.id} value={f.id}>
+                      {f.name} (per {f.unit})
+                    </option>
+                  ))}
+                </select>
+                <input
+                  placeholder={`Amount (${selectedFood?.unit ?? "unit"})`}
+                  inputMode="decimal"
+                  value={libraryAmount}
+                  onChange={(e) => setLibraryAmount(e.target.value)}
+                  className="w-full bg-background border border-white/10 rounded-card px-3 py-2 text-center"
+                />
+                {selectedFood && previewAmount > 0 && (
+                  <p className="text-xs opacity-60">
+                    ≈ {Math.round(previewAmount * selectedFood.calories_per_unit)} cal ·{" "}
+                    {Math.round(previewAmount * selectedFood.protein_per_unit)}g protein ·{" "}
+                    {Math.round(previewAmount * selectedFood.carbs_per_unit)}g carbs ·{" "}
+                    {Math.round(previewAmount * selectedFood.fat_per_unit)}g fat
+                  </p>
+                )}
+                <button onClick={addFromLibrary} className="btn-primary w-full py-2">
+                  Add to Today
+                </button>
+              </div>
+            )
+          ) : (
+            <div className="space-y-2">
+              <input
+                placeholder="Food name"
+                value={quickName}
+                onChange={(e) => setQuickName(e.target.value)}
+                className="w-full bg-background border border-white/10 rounded-card px-3 py-2"
+              />
+              <div className="grid grid-cols-2 gap-2">
+                <input
+                  placeholder="Amount (e.g. 8)"
+                  inputMode="decimal"
+                  value={quickAmount}
+                  onChange={(e) => setQuickAmount(e.target.value)}
+                  className="bg-background border border-white/10 rounded-card px-2 py-2 text-center"
+                />
+                <input
+                  placeholder="Unit (e.g. oz)"
+                  value={quickUnit}
+                  onChange={(e) => setQuickUnit(e.target.value)}
+                  className="bg-background border border-white/10 rounded-card px-2 py-2 text-center"
+                />
+              </div>
+              <p className="text-xs opacity-60">
+                Enter the total macros for that amount (not per-unit):
+              </p>
+              <div className="grid grid-cols-2 gap-2">
+                <input placeholder="Calories" inputMode="decimal" value={quickCalories}
+                  onChange={(e) => setQuickCalories(e.target.value)}
+                  className="bg-background border border-white/10 rounded-card px-2 py-2 text-center" />
+                <input placeholder="Protein (g)" inputMode="decimal" value={quickProtein}
+                  onChange={(e) => setQuickProtein(e.target.value)}
+                  className="bg-background border border-white/10 rounded-card px-2 py-2 text-center" />
+                <input placeholder="Carbs (g)" inputMode="decimal" value={quickCarbs}
+                  onChange={(e) => setQuickCarbs(e.target.value)}
+                  className="bg-background border border-white/10 rounded-card px-2 py-2 text-center" />
+                <input placeholder="Fat (g)" inputMode="decimal" value={quickFat}
+                  onChange={(e) => setQuickFat(e.target.value)}
+                  className="bg-background border border-white/10 rounded-card px-2 py-2 text-center" />
+              </div>
+              <label className="flex items-center gap-2 text-sm opacity-80">
+                <input
+                  type="checkbox"
+                  checked={rememberFood}
+                  onChange={(e) => setRememberFood(e.target.checked)}
+                />
+                Remember this food for next time (needs an amount + unit above)
+              </label>
+              <button onClick={addQuick} className="btn-primary w-full py-2">
+                Add to Today
+              </button>
+            </div>
+          )}
+
+          <div className="pt-3 border-t border-white/10">
+            <label className="block text-sm opacity-70 mb-1">Water (oz)</label>
+            <div className="flex gap-2">
+              <input
+                inputMode="decimal"
+                value={water}
+                onChange={(e) => setWater(e.target.value)}
+                className="flex-1 bg-background border border-white/10 rounded-card px-2 py-2 text-center"
+              />
+              <button onClick={saveWater} className="btn-primary px-4 py-2 text-sm">
+                Save
+              </button>
+            </div>
+          </div>
         </section>
 
         <section className="card p-4 space-y-3">

@@ -13,6 +13,10 @@ type Profile = {
   target_body_fat_low: number | null;
   target_body_fat_high: number | null;
   schedule_type: string | null;
+  target_calories: number | null;
+  target_protein_g: number | null;
+  target_carbs_g: number | null;
+  target_fat_g: number | null;
 };
 
 export default function ProfilePage() {
@@ -46,6 +50,10 @@ export default function ProfilePage() {
           target_body_fat_low: null,
           target_body_fat_high: null,
           schedule_type: "standard",
+          target_calories: null,
+          target_protein_g: null,
+          target_carbs_g: null,
+          target_fat_g: null,
         });
       }
     }
@@ -80,6 +88,12 @@ export default function ProfilePage() {
           ? Number(profile.target_body_fat_high)
           : null,
         schedule_type: profile.schedule_type || null,
+        target_calories: profile.target_calories ? Number(profile.target_calories) : null,
+        target_protein_g: profile.target_protein_g
+          ? Number(profile.target_protein_g)
+          : null,
+        target_carbs_g: profile.target_carbs_g ? Number(profile.target_carbs_g) : null,
+        target_fat_g: profile.target_fat_g ? Number(profile.target_fat_g) : null,
       });
     }
     setSaving(false);
@@ -185,6 +199,55 @@ export default function ProfilePage() {
               <option value="standard">Standard</option>
               <option value="48_96_firefighter">48/96 Firefighter</option>
             </select>
+          </div>
+
+          <div>
+            <p className="text-sm font-semibold mt-2 mb-1">Daily Nutrition Targets</p>
+            <p className="text-xs opacity-60 mb-2">
+              Used to show remaining/consumed on the Track page.
+            </p>
+          </div>
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label className="block text-sm opacity-70 mb-1">Calories</label>
+              <input
+                type="number"
+                inputMode="decimal"
+                value={profile.target_calories ?? ""}
+                onChange={(e) => update("target_calories", e.target.value)}
+                className="w-full bg-background border border-white/10 rounded-card px-3 py-2"
+              />
+            </div>
+            <div>
+              <label className="block text-sm opacity-70 mb-1">Protein (g)</label>
+              <input
+                type="number"
+                inputMode="decimal"
+                value={profile.target_protein_g ?? ""}
+                onChange={(e) => update("target_protein_g", e.target.value)}
+                className="w-full bg-background border border-white/10 rounded-card px-3 py-2"
+              />
+            </div>
+            <div>
+              <label className="block text-sm opacity-70 mb-1">Carbs (g)</label>
+              <input
+                type="number"
+                inputMode="decimal"
+                value={profile.target_carbs_g ?? ""}
+                onChange={(e) => update("target_carbs_g", e.target.value)}
+                className="w-full bg-background border border-white/10 rounded-card px-3 py-2"
+              />
+            </div>
+            <div>
+              <label className="block text-sm opacity-70 mb-1">Fat (g)</label>
+              <input
+                type="number"
+                inputMode="decimal"
+                value={profile.target_fat_g ?? ""}
+                onChange={(e) => update("target_fat_g", e.target.value)}
+                className="w-full bg-background border border-white/10 rounded-card px-3 py-2"
+              />
+            </div>
           </div>
 
           <button onClick={save} disabled={saving} className="btn-primary w-full py-2">
