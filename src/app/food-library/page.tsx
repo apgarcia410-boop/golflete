@@ -128,7 +128,7 @@ export default function FoodLibraryPage() {
       <NavBar />
       <main className="flex-1 p-4 pb-36 md:pb-4 md:p-8 max-w-2xl space-y-6">
         <div>
-          <Link href="/track" className="text-sm opacity-60 underline">
+          <Link href="/track" className="inline-block text-sm px-3 py-2 rounded-card border border-white/10">
             ← Back to Track
           </Link>
         </div>
@@ -252,10 +252,10 @@ export default function FoodLibraryPage() {
                     </p>
                   </div>
                   <span className="flex gap-3 text-sm">
-                    <button onClick={() => startEdit(f)} className="text-primary underline">
+                    <button onClick={() => startEdit(f)} className="px-3 py-1.5 rounded-card border border-primary/40 text-primary text-xs font-medium">
                       Edit
                     </button>
-                    <button onClick={() => deleteFood(f.id)} className="text-error underline">
+                    <button onClick={() => deleteFood(f.id)} className="px-3 py-1.5 rounded-card border border-error/40 text-error text-xs font-medium">
                       Delete
                     </button>
                   </span>

@@ -187,7 +187,7 @@ export default function BrandPage() {
     <div className="md:flex min-h-screen">
       <NavBar />
       <main className="flex-1 p-4 pb-36 md:pb-4 md:p-8 max-w-2xl space-y-6">
-        <Link href="/more" className="text-sm opacity-60 underline">
+        <Link href="/more" className="inline-block text-sm px-3 py-2 rounded-card border border-white/10">
           ← Back to More
         </Link>
         <h1 className="text-2xl font-bold">Brand & Appearance</h1>

@@ -49,6 +49,8 @@ type Targets = {
 export default function TrackPage() {
   const supabase = createClient();
   const today = getLocalDateString();
+  const [selectedDate, setSelectedDate] = useState(today);
+  const isToday = selectedDate === today;
 
   const [weight, setWeight] = useState("");
   const [waist, setWaist] = useState("");
@@ -113,9 +115,17 @@ export default function TrackPage() {
         "id, food_name, servings, serving_size_amount, serving_size_unit, calories, protein_g, carbs_g, fat_g"
       )
       .eq("user_id", userId)
-      .eq("logged_date", today)
+      .eq("logged_date", selectedDate)
       .order("logged_at");
     if (meals) setTodaysMeals(meals as MealEntry[]);
+
+    const { data: waterRow } = await supabase
+      .from("nutrition_logs")
+      .select("water_oz")
+      .eq("user_id", userId)
+      .eq("logged_date", selectedDate)
+      .maybeSingle();
+    setWater(waterRow?.water_oz != null ? String(waterRow.water_oz) : "");
 
     const { data: profile } = await supabase
       .from("profiles")
@@ -128,7 +138,27 @@ export default function TrackPage() {
   useEffect(() => {
     loadNutrition();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [selectedDate]);
+
+  function goToPreviousDay() {
+    const d = new Date(selectedDate + "T00:00:00");
+    d.setDate(d.getDate() - 1);
+    setSelectedDate(
+      `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(
+        d.getDate()
+      ).padStart(2, "0")}`
+    );
+  }
+
+  function goToNextDay() {
+    const d = new Date(selectedDate + "T00:00:00");
+    d.setDate(d.getDate() + 1);
+    setSelectedDate(
+      `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(
+        d.getDate()
+      ).padStart(2, "0")}`
+    );
+  }
 
   async function saveBody() {
     const userId = await getUserId();
@@ -147,7 +177,7 @@ export default function TrackPage() {
     const userId = await getUserId();
     if (!userId) return;
     await supabase.from("nutrition_logs").upsert(
-      { user_id: userId, logged_date: today, water_oz: water ? parseFloat(water) : null },
+      { user_id: userId, logged_date: selectedDate, water_oz: water ? parseFloat(water) : null },
       { onConflict: "user_id,logged_date" }
     );
     setSavedMsg("Water saved");
@@ -161,7 +191,7 @@ export default function TrackPage() {
     const servings = parseFloat(servingsConsumed);
     await supabase.from("meal_entries").insert({
       user_id: userId,
-      logged_date: today,
+      logged_date: selectedDate,
       food_id: food.id,
       food_name: food.name,
       servings,
@@ -193,7 +223,7 @@ export default function TrackPage() {
 
     await supabase.from("meal_entries").insert({
       user_id: userId,
-      logged_date: today,
+      logged_date: selectedDate,
       food_id: null,
       food_name: quickName,
       servings: 1,
@@ -313,9 +343,41 @@ export default function TrackPage() {
         </section>
 
         <section className="card p-4 space-y-3">
-          <h2 className="font-semibold">Nutrition — Today</h2>
+          <div className="flex items-center justify-between">
+            <button onClick={goToPreviousDay} className="text-sm px-3 py-2 rounded-card border border-white/10 opacity-80">
+              ← Prev
+            </button>
+            <h2 className="font-semibold text-center">
+              Nutrition
+              <br />
+              <span className="text-sm font-normal opacity-70">
+                {isToday
+                  ? "Today"
+                  : new Date(selectedDate + "T00:00:00").toLocaleDateString(undefined, {
+                      weekday: "short",
+                      month: "short",
+                      day: "numeric",
+                    })}
+              </span>
+            </h2>
+            <button
+              onClick={goToNextDay}
+              disabled={isToday}
+              className={`text-sm px-3 py-2 rounded-card border ${isToday ? "opacity-20 border-white/10" : "opacity-80 border-white/10"}`}
+            >
+              Next →
+            </button>
+          </div>
+          {!isToday && (
+            <button
+              onClick={() => setSelectedDate(today)}
+              className="text-xs text-primary px-3 py-2 rounded-card border border-primary/40 block text-center"
+            >
+              Jump back to today
+            </button>
+          )}
 
-          <Link href="/food-library" className="text-xs text-primary underline block">
+          <Link href="/food-library" className="text-xs text-primary px-3 py-2 rounded-card border border-primary/40 block text-center">
             Manage Food Library →
           </Link>
 
@@ -344,7 +406,7 @@ export default function TrackPage() {
                   </span>
                   <span className="flex items-center gap-2">
                     <span className="opacity-60">{Math.round(m.calories ?? 0)} cal</span>
-                    <button onClick={() => deleteMeal(m.id)} className="text-error underline">
+                    <button onClick={() => deleteMeal(m.id)} className="px-3 py-1.5 rounded-card border border-error/40 text-error text-xs font-medium">
                       Delete
                     </button>
                   </span>
@@ -418,7 +480,7 @@ export default function TrackPage() {
                   </p>
                 )}
                 <button onClick={addFromLibrary} className="btn-primary w-full py-2">
-                  Add to Today
+                  {isToday ? "Add to Today" : `Add to ${selectedDate}`}
                 </button>
               </div>
             )
@@ -473,7 +535,7 @@ export default function TrackPage() {
                 {quickServingUnit || "unit"}" as its serving size for next time)
               </label>
               <button onClick={addQuick} className="btn-primary w-full py-2">
-                Add to Today
+                {isToday ? "Add to Today" : `Add to ${selectedDate}`}
               </button>
             </div>
           )}

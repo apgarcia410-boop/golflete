@@ -173,7 +173,7 @@ export default async function DashboardPage() {
               </Link>
               <Link
                 href="/program"
-                className="inline-block px-4 py-2 text-sm underline opacity-70"
+                className="inline-block px-4 py-2 text-sm rounded-card border border-white/10 opacity-90"
               >
                 Preview Full Program
               </Link>

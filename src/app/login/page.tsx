@@ -73,7 +73,7 @@ export default function LoginPage() {
         </form>
 
         <button
-          className="text-sm opacity-70 mt-4 underline"
+          className="text-sm opacity-70 mt-4 px-4 py-2 rounded-card border border-white/10 w-full block text-center"
           onClick={() => setMode(mode === "signin" ? "signup" : "signin")}
         >
           {mode === "signin"

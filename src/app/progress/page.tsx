@@ -34,7 +34,7 @@ export default async function ProgressPage() {
 
         <Link
           href="/program"
-          className="block card p-4 text-sm text-primary underline"
+          className="block card p-4 text-sm text-primary font-medium border border-primary/30"
         >
           Browse the full 6-week program →
         </Link>
