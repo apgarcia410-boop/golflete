@@ -368,6 +368,15 @@ export default function TrackPage() {
               Next →
             </button>
           </div>
+
+          <input
+            type="date"
+            value={selectedDate}
+            max={today}
+            onChange={(e) => setSelectedDate(e.target.value)}
+            className="w-full bg-background border border-white/10 rounded-card px-3 py-2 text-sm text-center"
+          />
+
           {!isToday && (
             <button
               onClick={() => setSelectedDate(today)}

@@ -17,6 +17,11 @@ export default function MorePage() {
           <p className="font-semibold">Brand & Appearance</p>
           <p className="text-sm opacity-60">Logo, colors, theme presets</p>
         </Link>
+
+        <Link href="/exercise-library" className="block card p-4">
+          <p className="font-semibold">Exercise Library</p>
+          <p className="text-sm opacity-60">Add, edit, or remove exercises</p>
+        </Link>
       </main>
     </div>
   );

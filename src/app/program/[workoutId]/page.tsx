@@ -223,6 +223,12 @@ export default function ProgramWorkoutEditPage({
 
         <section className="card p-4 space-y-2">
           <h2 className="font-semibold">Add an Exercise</h2>
+          <Link
+            href="/exercise-library"
+            className="text-xs text-primary px-3 py-2 rounded-card border border-primary/40 block text-center"
+          >
+            Manage Exercise Library →
+          </Link>
           <select
             value={newExerciseId}
             onChange={(e) => setNewExerciseId(e.target.value)}
