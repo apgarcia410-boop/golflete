@@ -1,6 +1,7 @@
 import { createClient } from "@/lib/supabase/server";
 import NavBar from "@/components/NavBar";
 import Link from "next/link";
+import LocalDate from "@/components/LocalDate";
 
 export default async function ProgressPage() {
   const supabase = createClient();
@@ -69,7 +70,7 @@ export default async function ProgressPage() {
                     className="flex justify-between hover:text-primary"
                   >
                     <span className="opacity-60">
-                      {new Date(s.started_at).toLocaleDateString()}
+                      <LocalDate iso={s.started_at} />
                     </span>
                     <span>
                       {s.location ?? "—"} · {s.status}
