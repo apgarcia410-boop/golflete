@@ -142,7 +142,15 @@ export default function ProgramPage() {
     return (
       <div className="md:flex min-h-screen">
         <NavBar />
-        <main className="flex-1 p-4 md:p-8">No active program loaded yet.</main>
+        <main className="flex-1 p-4 md:p-8 space-y-3">
+          <p>No active program loaded yet.</p>
+          <Link
+            href="/catalog"
+            className="btn-primary inline-block px-4 py-2 text-sm"
+          >
+            Browse the Program Catalog
+          </Link>
+        </main>
       </div>
     );
   }

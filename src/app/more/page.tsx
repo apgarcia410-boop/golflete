@@ -22,6 +22,11 @@ export default function MorePage() {
           <p className="font-semibold">Exercise Library</p>
           <p className="text-sm opacity-60">Add, edit, or remove exercises</p>
         </Link>
+
+        <Link href="/catalog" className="block card p-4">
+          <p className="font-semibold">Program Catalog</p>
+          <p className="text-sm opacity-60">Browse and select a program to follow</p>
+        </Link>
       </main>
     </div>
   );

@@ -131,9 +131,15 @@ export default async function DashboardPage() {
           {!programStatus ? (
             <>
               <p className="font-semibold mb-3">
-                No program loaded yet — the 6-week program needs to be added.
+                No program loaded yet — browse the catalog to get started.
               </p>
-              <Link href="/train" className="btn-primary inline-block px-4 py-2 text-sm">
+              <Link href="/catalog" className="btn-primary inline-block px-4 py-2 text-sm mr-2">
+                Browse Programs
+              </Link>
+              <Link
+                href="/train"
+                className="inline-block px-4 py-2 text-sm rounded-card border border-white/10 opacity-90"
+              >
                 Log a Workout
               </Link>
             </>
