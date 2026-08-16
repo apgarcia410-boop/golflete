@@ -18,6 +18,7 @@ export default function ExerciseLibraryPage() {
   const [exercises, setExercises] = useState<Exercise[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [editingId, setEditingId] = useState<string | null>(null);
+  const [isAdmin, setIsAdmin] = useState(false);
 
   const [editName, setEditName] = useState("");
   const [editCategoryId, setEditCategoryId] = useState("");
@@ -28,6 +29,18 @@ export default function ExerciseLibraryPage() {
   const [newEquipment, setNewEquipment] = useState("");
 
   async function load() {
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+    if (user) {
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("role")
+        .eq("id", user.id)
+        .maybeSingle();
+      setIsAdmin(profile?.role === "admin");
+    }
+
     const { data: cats } = await supabase
       .from("exercise_categories")
       .select("id, name")
@@ -105,10 +118,12 @@ export default function ExerciseLibraryPage() {
 
         <h1 className="text-2xl font-bold">Exercise Library</h1>
         <p className="text-xs opacity-60">
-          Shared across your whole account — any exercise added here shows up in the
-          picker on every workout session and program editor.
+          {isAdmin
+            ? "Shared across every account — any exercise added here shows up in the picker on every workout session and program editor."
+            : "The shared list of exercises available to build workouts from."}
         </p>
 
+        {isAdmin && (
         <section className="card p-4 space-y-2">
           <h2 className="font-semibold">Add a New Exercise</h2>
           <input
@@ -138,12 +153,13 @@ export default function ExerciseLibraryPage() {
             Add to Library
           </button>
         </section>
+        )}
 
         <section className="space-y-2">
-          <h2 className="font-semibold">Your Exercises ({exercises.length})</h2>
+          <h2 className="font-semibold">Exercises ({exercises.length})</h2>
           {exercises.map((ex) => (
             <div key={ex.id} className="card p-4">
-              {editingId === ex.id ? (
+              {isAdmin && editingId === ex.id ? (
                 <div className="space-y-2">
                   <input
                     value={editName}
@@ -188,20 +204,22 @@ export default function ExerciseLibraryPage() {
                       {ex.equipment ? ` · ${ex.equipment}` : ""}
                     </p>
                   </div>
-                  <span className="flex gap-3 text-sm">
-                    <button
-                      onClick={() => startEdit(ex)}
-                      className="px-3 py-1.5 rounded-card border border-primary/40 text-primary text-xs font-medium"
-                    >
-                      Edit
-                    </button>
-                    <button
-                      onClick={() => deleteExercise(ex.id)}
-                      className="px-3 py-1.5 rounded-card border border-error/40 text-error text-xs font-medium"
-                    >
-                      Delete
-                    </button>
-                  </span>
+                  {isAdmin && (
+                    <span className="flex gap-3 text-sm">
+                      <button
+                        onClick={() => startEdit(ex)}
+                        className="px-3 py-1.5 rounded-card border border-primary/40 text-primary text-xs font-medium"
+                      >
+                        Edit
+                      </button>
+                      <button
+                        onClick={() => deleteExercise(ex.id)}
+                        className="px-3 py-1.5 rounded-card border border-error/40 text-error text-xs font-medium"
+                      >
+                        Delete
+                      </button>
+                    </span>
+                  )}
                 </div>
               )}
             </div>
