@@ -20,14 +20,21 @@ export default function NavBar() {
   useEffect(() => {
     const supabase = createClient();
     async function loadLogo() {
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
-      if (!user) return;
+      // Logo is a global brand setting controlled by the admin,
+      // not per-user — look up the admin's row regardless of who's
+      // currently logged in.
+      const { data: adminProfile } = await supabase
+        .from("profiles")
+        .select("id")
+        .eq("role", "admin")
+        .limit(1)
+        .maybeSingle();
+      if (!adminProfile) return;
+
       const { data } = await supabase
         .from("brand_settings")
         .select("logo_url")
-        .eq("user_id", user.id)
+        .eq("user_id", adminProfile.id)
         .maybeSingle();
       if (data?.logo_url) setLogoUrl(data.logo_url);
     }

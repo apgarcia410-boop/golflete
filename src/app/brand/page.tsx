@@ -65,6 +65,7 @@ export default function BrandPage() {
   const [brand, setBrand] = useState<Brand | null>(null);
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState(false);
+  const [isAdmin, setIsAdmin] = useState(false);
 
   useEffect(() => {
     async function load() {
@@ -72,6 +73,14 @@ export default function BrandPage() {
         data: { user },
       } = await supabase.auth.getUser();
       if (!user) return;
+
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("role")
+        .eq("id", user.id)
+        .maybeSingle();
+      setIsAdmin(profile?.role === "admin");
+
       const { data } = await supabase
         .from("brand_settings")
         .select("*")
@@ -233,10 +242,13 @@ export default function BrandPage() {
           ))}
         </section>
 
+        {isAdmin && (
         <section className="card p-4 space-y-3">
           <h2 className="font-semibold">Logo</h2>
           <p className="text-xs opacity-60">
-            Shown in the nav bar. Works well as a wide image, transparent background is fine.
+            Shown in the nav bar for every user — this is the app's shared branding,
+            not personal to your account. Works well as a wide image, transparent
+            background is fine.
           </p>
           {brand.logo_url && (
             // eslint-disable-next-line @next/next/no-img-element
@@ -245,13 +257,16 @@ export default function BrandPage() {
           <input type="file" accept="image/png,image/jpeg,image/svg+xml" onChange={handleLogoUpload} />
           {uploading && <p className="text-sm opacity-60">Uploading…</p>}
         </section>
+        )}
 
+        {isAdmin && (
         <section className="card p-4 space-y-3">
           <h2 className="font-semibold">App Icon</h2>
           <p className="text-xs opacity-60">
-            Shown on your iPhone home screen when you "Add to Home Screen." Use a
-            square image with a solid background (no transparency) — iOS renders
-            transparent areas as black. 512×512 or larger recommended.
+            Shown on the iPhone home screen for every user when they "Add to Home
+            Screen" — shared branding, not personal. Use a square image with a solid
+            background (no transparency) — iOS renders transparent areas as black.
+            512×512 or larger recommended.
           </p>
           {brand.app_icon_url && (
             // eslint-disable-next-line @next/next/no-img-element
@@ -264,11 +279,12 @@ export default function BrandPage() {
           <input type="file" accept="image/png,image/jpeg" onChange={handleAppIconUpload} />
           {uploading && <p className="text-sm opacity-60">Uploading…</p>}
           <p className="text-xs opacity-50">
-            After uploading, remove the app from your home screen and re-add it
-            (Share → Add to Home Screen) — iOS caches the icon at install time and
-            won't pick up a change otherwise.
+            After uploading, each user needs to remove the app from their home screen
+            and re-add it (Share → Add to Home Screen) — iOS caches the icon at
+            install time per device and won't pick up a change otherwise.
           </p>
         </section>
+        )}
 
         <div className="flex gap-2">
           <button onClick={save} disabled={saving} className="btn-primary flex-1 py-2">

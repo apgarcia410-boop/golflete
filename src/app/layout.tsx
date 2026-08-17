@@ -8,15 +8,22 @@ export async function generateMetadata(): Promise<Metadata> {
 
   try {
     const supabase = createClient();
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
 
-    if (user) {
+    // App icon is a global brand setting controlled by the admin,
+    // not per-user — this looks up the admin's row directly, so it
+    // shows the same icon for every user regardless of who's logged in.
+    const { data: adminProfile } = await supabase
+      .from("profiles")
+      .select("id")
+      .eq("role", "admin")
+      .limit(1)
+      .maybeSingle();
+
+    if (adminProfile) {
       const { data } = await supabase
         .from("brand_settings")
         .select("app_icon_url")
-        .eq("user_id", user.id)
+        .eq("user_id", adminProfile.id)
         .maybeSingle();
       if (data?.app_icon_url) appleIcon = data.app_icon_url;
     }
