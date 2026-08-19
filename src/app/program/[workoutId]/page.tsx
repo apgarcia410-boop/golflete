@@ -153,7 +153,7 @@ export default function ProgramWorkoutEditPage({
                   <select
                     value={editExerciseId}
                     onChange={(e) => setEditExerciseId(e.target.value)}
-                    className="w-full bg-background border border-white/10 rounded-card px-2 py-2"
+                    className="w-full bg-background border border-white/10 rounded-card px-2 py-2.5"
                   >
                     {library.map((ex) => (
                       <option key={ex.id} value={ex.id}>
@@ -176,10 +176,10 @@ export default function ProgramWorkoutEditPage({
                     placeholder="Notes"
                     value={editNotes}
                     onChange={(e) => setEditNotes(e.target.value)}
-                    className="w-full bg-background border border-white/10 rounded-card px-2 py-2"
+                    className="w-full bg-background border border-white/10 rounded-card px-2 py-2.5"
                   />
                   <div className="flex gap-2">
-                    <button onClick={() => saveEdit(p.id)} className="btn-primary flex-1 py-2 text-sm">
+                    <button onClick={() => saveEdit(p.id)} className="btn-primary flex-1 py-2.5 text-sm min-h-[44px]">
                       Save
                     </button>
                     <button
@@ -205,10 +205,10 @@ export default function ProgramWorkoutEditPage({
                     {p.notes && <p className="text-xs opacity-50">{p.notes}</p>}
                   </div>
                   <span className="flex gap-3 text-sm">
-                    <button onClick={() => startEdit(p)} className="px-3 py-1.5 rounded-card border border-primary/40 text-primary text-xs font-medium">
+                    <button onClick={() => startEdit(p)} className="px-4 py-2.5 rounded-card border border-primary/40 text-primary text-sm font-medium min-h-[44px]">
                       Edit
                     </button>
-                    <button onClick={() => removeExercise(p.id)} className="px-3 py-1.5 rounded-card border border-error/40 text-error text-xs font-medium">
+                    <button onClick={() => removeExercise(p.id)} className="px-4 py-2.5 rounded-card border border-error/40 text-error text-sm font-medium min-h-[44px]">
                       Remove
                     </button>
                   </span>
@@ -232,7 +232,7 @@ export default function ProgramWorkoutEditPage({
           <select
             value={newExerciseId}
             onChange={(e) => setNewExerciseId(e.target.value)}
-            className="w-full bg-background border border-white/10 rounded-card px-3 py-2"
+            className="w-full bg-background border border-white/10 rounded-card px-3 py-2.5"
           >
             {library.map((ex) => (
               <option key={ex.id} value={ex.id}>
@@ -255,9 +255,9 @@ export default function ProgramWorkoutEditPage({
             placeholder="Notes (optional)"
             value={newNotes}
             onChange={(e) => setNewNotes(e.target.value)}
-            className="w-full bg-background border border-white/10 rounded-card px-3 py-2"
+            className="w-full bg-background border border-white/10 rounded-card px-3 py-2.5"
           />
-          <button onClick={addExercise} className="btn-primary w-full py-2">
+          <button onClick={addExercise} className="btn-primary w-full py-2.5">
             Add to This Session
           </button>
         </section>

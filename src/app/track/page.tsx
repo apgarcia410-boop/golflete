@@ -339,7 +339,7 @@ export default function TrackPage() {
               onChange={(e) => setBodyFat(e.target.value)}
               className="bg-background border border-white/10 rounded-card px-2 py-2 text-center" />
           </div>
-          <button onClick={saveBody} className="btn-primary w-full py-2">Save Body Stats</button>
+          <button onClick={saveBody} className="btn-primary w-full py-2.5">Save Body Stats</button>
         </section>
 
         <section className="card p-4 space-y-3">
@@ -415,7 +415,7 @@ export default function TrackPage() {
                   </span>
                   <span className="flex items-center gap-2">
                     <span className="opacity-60">{Math.round(m.calories ?? 0)} cal</span>
-                    <button onClick={() => deleteMeal(m.id)} className="px-3 py-1.5 rounded-card border border-error/40 text-error text-xs font-medium">
+                    <button onClick={() => deleteMeal(m.id)} className="px-4 py-2.5 rounded-card border border-error/40 text-error text-sm font-medium min-h-[44px]">
                       Delete
                     </button>
                   </span>
@@ -454,7 +454,7 @@ export default function TrackPage() {
                 <select
                   value={selectedFoodId}
                   onChange={(e) => setSelectedFoodId(e.target.value)}
-                  className="w-full bg-background border border-white/10 rounded-card px-3 py-2"
+                  className="w-full bg-background border border-white/10 rounded-card px-3 py-2.5"
                 >
                   {library.map((f) => (
                     <option key={f.id} value={f.id}>
@@ -488,7 +488,7 @@ export default function TrackPage() {
                     {Math.round(previewServings * selectedFood.fat_per_serving)}g fat
                   </p>
                 )}
-                <button onClick={addFromLibrary} className="btn-primary w-full py-2">
+                <button onClick={addFromLibrary} className="btn-primary w-full py-2.5">
                   {isToday ? "Add to Today" : `Add to ${selectedDate}`}
                 </button>
               </div>
@@ -499,7 +499,7 @@ export default function TrackPage() {
                 placeholder="Food name"
                 value={quickName}
                 onChange={(e) => setQuickName(e.target.value)}
-                className="w-full bg-background border border-white/10 rounded-card px-3 py-2"
+                className="w-full bg-background border border-white/10 rounded-card px-3 py-2.5"
               />
               <p className="text-xs opacity-60">How much are you eating right now?</p>
               <div className="grid grid-cols-2 gap-2">
@@ -534,16 +534,17 @@ export default function TrackPage() {
                   onChange={(e) => setQuickFat(e.target.value)}
                   className="bg-background border border-white/10 rounded-card px-2 py-2 text-center" />
               </div>
-              <label className="flex items-center gap-2 text-sm opacity-80">
+              <label className="flex items-center gap-3 text-sm opacity-80 py-2">
                 <input
                   type="checkbox"
                   checked={rememberFood}
                   onChange={(e) => setRememberFood(e.target.checked)}
+                  className="w-6 h-6 shrink-0"
                 />
                 Remember this food (saves "{quickServingAmount || "?"}
                 {quickServingUnit || "unit"}" as its serving size for next time)
               </label>
-              <button onClick={addQuick} className="btn-primary w-full py-2">
+              <button onClick={addQuick} className="btn-primary w-full py-2.5">
                 {isToday ? "Add to Today" : `Add to ${selectedDate}`}
               </button>
             </div>
@@ -558,7 +559,7 @@ export default function TrackPage() {
                 onChange={(e) => setWater(e.target.value)}
                 className="flex-1 bg-background border border-white/10 rounded-card px-2 py-2 text-center"
               />
-              <button onClick={saveWater} className="btn-primary px-4 py-2 text-sm">
+              <button onClick={saveWater} className="btn-primary px-4 py-2.5 text-sm min-h-[44px]">
                 Save
               </button>
             </div>
@@ -590,7 +591,7 @@ export default function TrackPage() {
                 className="w-full bg-background border border-white/10 rounded-card px-2 py-2 text-center" />
             </div>
           </div>
-          <button onClick={saveReadiness} className="btn-primary w-full py-2">Save Readiness</button>
+          <button onClick={saveReadiness} className="btn-primary w-full py-2.5">Save Readiness</button>
         </section>
       </main>
     </div>

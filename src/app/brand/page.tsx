@@ -236,7 +236,7 @@ export default function BrandPage() {
                 type="color"
                 value={brand[key]}
                 onChange={(e) => applyLive({ [key]: e.target.value, preset: "custom" })}
-                className="w-10 h-8 rounded"
+                className="w-14 h-11 rounded"
               />
             </div>
           ))}
@@ -287,7 +287,7 @@ export default function BrandPage() {
         )}
 
         <div className="flex gap-2">
-          <button onClick={save} disabled={saving} className="btn-primary flex-1 py-2">
+          <button onClick={save} disabled={saving} className="btn-primary flex-1 py-2.5">
             {saving ? "Saving…" : "Save Brand"}
           </button>
           <button onClick={resetDefault} className="flex-1 py-2 rounded-card border border-white/10">

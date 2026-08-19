@@ -52,7 +52,7 @@ export default function NavBar() {
           // eslint-disable-next-line @next/next/no-img-element
           <img src={logoUrl} alt="Logo" className="h-14 object-contain" />
         ) : (
-          <span className="font-bold text-lg">Golf Athlete</span>
+          <span className="font-bold text-lg">Lifelete</span>
         )}
       </header>
       <nav
@@ -82,7 +82,7 @@ export default function NavBar() {
             // eslint-disable-next-line @next/next/no-img-element
             <img src={logoUrl} alt="Logo" className="h-10 object-contain" />
           ) : (
-            <p className="text-lg font-bold">Golf Athlete</p>
+            <p className="text-lg font-bold">Lifelete</p>
           )}
         </div>
         {TABS.map((tab) => {

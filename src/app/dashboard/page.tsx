@@ -152,7 +152,7 @@ export default async function DashboardPage() {
                 All {programStatus.totalSessions} sessions done. Time to talk about
                 Version 2 or move into Phase 2.
               </p>
-              <Link href="/train" className="btn-primary inline-block px-4 py-2 text-sm">
+              <Link href="/train" className="btn-primary inline-block px-4 py-2.5 text-sm min-h-[44px]">
                 Log an Extra Workout
               </Link>
             </>

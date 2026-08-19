@@ -37,7 +37,7 @@ export default function LoginPage() {
   return (
     <main className="min-h-screen flex items-center justify-center px-4">
       <div className="card w-full max-w-sm p-6">
-        <h1 className="text-2xl font-bold mb-1">Golf Athlete App</h1>
+        <h1 className="text-2xl font-bold mb-1">Lifelete</h1>
         <p className="text-sm opacity-70 mb-6">
           {mode === "signin" ? "Sign in to your account" : "Create your account"}
         </p>
@@ -50,7 +50,7 @@ export default function LoginPage() {
               required
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="w-full rounded-card bg-background border border-white/10 px-3 py-2"
+              className="w-full rounded-card bg-background border border-white/10 px-3 py-2.5"
             />
           </div>
           <div>
@@ -61,13 +61,13 @@ export default function LoginPage() {
               minLength={6}
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="w-full rounded-card bg-background border border-white/10 px-3 py-2"
+              className="w-full rounded-card bg-background border border-white/10 px-3 py-2.5"
             />
           </div>
 
           {error && <p className="text-error text-sm">{error}</p>}
 
-          <button type="submit" disabled={loading} className="btn-primary w-full py-2">
+          <button type="submit" disabled={loading} className="btn-primary w-full py-2.5">
             {loading ? "Please wait…" : mode === "signin" ? "Sign In" : "Sign Up"}
           </button>
         </form>

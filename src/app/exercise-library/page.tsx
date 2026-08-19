@@ -130,12 +130,12 @@ export default function ExerciseLibraryPage() {
             placeholder="Exercise name"
             value={newName}
             onChange={(e) => setNewName(e.target.value)}
-            className="w-full bg-background border border-white/10 rounded-card px-3 py-2"
+            className="w-full bg-background border border-white/10 rounded-card px-3 py-2.5"
           />
           <select
             value={newCategoryId}
             onChange={(e) => setNewCategoryId(e.target.value)}
-            className="w-full bg-background border border-white/10 rounded-card px-3 py-2"
+            className="w-full bg-background border border-white/10 rounded-card px-3 py-2.5"
           >
             {categories.map((c) => (
               <option key={c.id} value={c.id}>
@@ -147,9 +147,9 @@ export default function ExerciseLibraryPage() {
             placeholder="Equipment (e.g. dumbbell, bodyweight, cable)"
             value={newEquipment}
             onChange={(e) => setNewEquipment(e.target.value)}
-            className="w-full bg-background border border-white/10 rounded-card px-3 py-2"
+            className="w-full bg-background border border-white/10 rounded-card px-3 py-2.5"
           />
-          <button onClick={addExercise} className="btn-primary w-full py-2">
+          <button onClick={addExercise} className="btn-primary w-full py-2.5">
             Add to Library
           </button>
         </section>
@@ -164,12 +164,12 @@ export default function ExerciseLibraryPage() {
                   <input
                     value={editName}
                     onChange={(e) => setEditName(e.target.value)}
-                    className="w-full bg-background border border-white/10 rounded-card px-2 py-2"
+                    className="w-full bg-background border border-white/10 rounded-card px-2 py-2.5"
                   />
                   <select
                     value={editCategoryId}
                     onChange={(e) => setEditCategoryId(e.target.value)}
-                    className="w-full bg-background border border-white/10 rounded-card px-2 py-2"
+                    className="w-full bg-background border border-white/10 rounded-card px-2 py-2.5"
                   >
                     {categories.map((c) => (
                       <option key={c.id} value={c.id}>
@@ -181,10 +181,10 @@ export default function ExerciseLibraryPage() {
                     placeholder="Equipment"
                     value={editEquipment}
                     onChange={(e) => setEditEquipment(e.target.value)}
-                    className="w-full bg-background border border-white/10 rounded-card px-2 py-2"
+                    className="w-full bg-background border border-white/10 rounded-card px-2 py-2.5"
                   />
                   <div className="flex gap-2">
-                    <button onClick={() => saveEdit(ex.id)} className="btn-primary flex-1 py-2 text-sm">
+                    <button onClick={() => saveEdit(ex.id)} className="btn-primary flex-1 py-2.5 text-sm min-h-[44px]">
                       Save
                     </button>
                     <button
@@ -208,13 +208,13 @@ export default function ExerciseLibraryPage() {
                     <span className="flex gap-3 text-sm">
                       <button
                         onClick={() => startEdit(ex)}
-                        className="px-3 py-1.5 rounded-card border border-primary/40 text-primary text-xs font-medium"
+                        className="px-4 py-2.5 rounded-card border border-primary/40 text-primary text-sm font-medium min-h-[44px]"
                       >
                         Edit
                       </button>
                       <button
                         onClick={() => deleteExercise(ex.id)}
-                        className="px-3 py-1.5 rounded-card border border-error/40 text-error text-xs font-medium"
+                        className="px-4 py-2.5 rounded-card border border-error/40 text-error text-sm font-medium min-h-[44px]"
                       >
                         Delete
                       </button>

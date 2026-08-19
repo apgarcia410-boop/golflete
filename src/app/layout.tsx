@@ -33,13 +33,13 @@ export async function generateMetadata(): Promise<Metadata> {
   }
 
   return {
-    title: "Golf Athlete App",
+    title: "Lifelete",
     description: "Personal golf-athlete performance lab",
     manifest: "/manifest.json",
     appleWebApp: {
       capable: true,
       statusBarStyle: "black-translucent",
-      title: "Golf Athlete",
+      title: "Lifelete",
     },
     icons: {
       apple: appleIcon,

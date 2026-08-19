@@ -206,17 +206,17 @@ export default function WorkoutDetailPage({ params }: { params: { id: string } }
               inputMode="numeric"
               value={sessionDuration}
               onChange={(e) => setSessionDuration(e.target.value)}
-              className="w-full bg-background border border-white/10 rounded-card px-3 py-2"
+              className="w-full bg-background border border-white/10 rounded-card px-3 py-2.5"
             />
           </div>
           <textarea
             value={sessionNotes}
             onChange={(e) => setSessionNotes(e.target.value)}
             placeholder="Notes about this session"
-            className="w-full bg-background border border-white/10 rounded-card px-3 py-2"
+            className="w-full bg-background border border-white/10 rounded-card px-3 py-2.5"
             rows={2}
           />
-          <button onClick={saveSessionInfo} className="btn-primary w-full py-2">
+          <button onClick={saveSessionInfo} className="btn-primary w-full py-2.5">
             Save Session Info
           </button>
         </section>
@@ -262,12 +262,12 @@ export default function WorkoutDetailPage({ params }: { params: { id: string } }
                         placeholder="Notes"
                         value={editNotes}
                         onChange={(e) => setEditNotes(e.target.value)}
-                        className="w-full bg-background border border-white/10 rounded-card px-2 py-2"
+                        className="w-full bg-background border border-white/10 rounded-card px-2 py-2.5"
                       />
                       <div className="flex gap-2">
                         <button
                           onClick={() => saveSet(s.id)}
-                          className="btn-primary flex-1 py-2 text-sm"
+                          className="btn-primary flex-1 py-2.5 text-sm min-h-[44px]"
                         >
                           Save
                         </button>
@@ -289,13 +289,13 @@ export default function WorkoutDetailPage({ params }: { params: { id: string } }
                       <span className="flex gap-3">
                         <button
                           onClick={() => startEditSet(s)}
-                          className="px-3 py-1.5 rounded-card border border-primary/40 text-primary text-xs font-medium"
+                          className="px-4 py-2.5 rounded-card border border-primary/40 text-primary text-sm font-medium min-h-[44px]"
                         >
                           Edit
                         </button>
                         <button
                           onClick={() => deleteSet(s.id)}
-                          className="px-3 py-1.5 rounded-card border border-error/40 text-error text-xs font-medium"
+                          className="px-4 py-2.5 rounded-card border border-error/40 text-error text-sm font-medium min-h-[44px]"
                         >
                           Delete
                         </button>

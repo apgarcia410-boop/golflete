@@ -141,7 +141,7 @@ export default function FoodLibraryPage() {
             placeholder="Food name"
             value={newName}
             onChange={(e) => setNewName(e.target.value)}
-            className="w-full bg-background border border-white/10 rounded-card px-3 py-2"
+            className="w-full bg-background border border-white/10 rounded-card px-3 py-2.5"
           />
           <p className="text-xs opacity-60">What does one serving look like?</p>
           <div className="grid grid-cols-2 gap-2">
@@ -176,7 +176,7 @@ export default function FoodLibraryPage() {
               onChange={(e) => setNewFat(e.target.value)}
               className="bg-background border border-white/10 rounded-card px-2 py-2 text-center" />
           </div>
-          <button onClick={addFood} className="btn-primary w-full py-2">
+          <button onClick={addFood} className="btn-primary w-full py-2.5">
             Add to Library
           </button>
         </section>
@@ -193,7 +193,7 @@ export default function FoodLibraryPage() {
                   <input
                     value={editName}
                     onChange={(e) => setEditName(e.target.value)}
-                    className="w-full bg-background border border-white/10 rounded-card px-2 py-2"
+                    className="w-full bg-background border border-white/10 rounded-card px-2 py-2.5"
                   />
                   <div className="grid grid-cols-2 gap-2">
                     <input
@@ -228,7 +228,7 @@ export default function FoodLibraryPage() {
                       className="bg-background border border-white/10 rounded-card px-2 py-2 text-center" />
                   </div>
                   <div className="flex gap-2">
-                    <button onClick={() => saveEdit(f.id)} className="btn-primary flex-1 py-2 text-sm">
+                    <button onClick={() => saveEdit(f.id)} className="btn-primary flex-1 py-2.5 text-sm min-h-[44px]">
                       Save
                     </button>
                     <button
@@ -252,10 +252,10 @@ export default function FoodLibraryPage() {
                     </p>
                   </div>
                   <span className="flex gap-3 text-sm">
-                    <button onClick={() => startEdit(f)} className="px-3 py-1.5 rounded-card border border-primary/40 text-primary text-xs font-medium">
+                    <button onClick={() => startEdit(f)} className="px-4 py-2.5 rounded-card border border-primary/40 text-primary text-sm font-medium min-h-[44px]">
                       Edit
                     </button>
-                    <button onClick={() => deleteFood(f.id)} className="px-3 py-1.5 rounded-card border border-error/40 text-error text-xs font-medium">
+                    <button onClick={() => deleteFood(f.id)} className="px-4 py-2.5 rounded-card border border-error/40 text-error text-sm font-medium min-h-[44px]">
                       Delete
                     </button>
                   </span>

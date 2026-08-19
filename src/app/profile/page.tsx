@@ -128,7 +128,7 @@ export default function ProfilePage() {
             <input
               value={profile.full_name ?? ""}
               onChange={(e) => update("full_name", e.target.value)}
-              className="w-full bg-background border border-white/10 rounded-card px-3 py-2"
+              className="w-full bg-background border border-white/10 rounded-card px-3 py-2.5"
             />
           </div>
 
@@ -139,7 +139,7 @@ export default function ProfilePage() {
               inputMode="decimal"
               value={profile.height_inches ?? ""}
               onChange={(e) => update("height_inches", e.target.value)}
-              className="w-full bg-background border border-white/10 rounded-card px-3 py-2"
+              className="w-full bg-background border border-white/10 rounded-card px-3 py-2.5"
             />
           </div>
 
@@ -151,7 +151,7 @@ export default function ProfilePage() {
                 inputMode="decimal"
                 value={profile.current_weight_lb ?? ""}
                 onChange={(e) => update("current_weight_lb", e.target.value)}
-                className="w-full bg-background border border-white/10 rounded-card px-3 py-2"
+                className="w-full bg-background border border-white/10 rounded-card px-3 py-2.5"
               />
             </div>
             <div>
@@ -161,7 +161,7 @@ export default function ProfilePage() {
                 inputMode="decimal"
                 value={profile.target_weight_lb ?? ""}
                 onChange={(e) => update("target_weight_lb", e.target.value)}
-                className="w-full bg-background border border-white/10 rounded-card px-3 py-2"
+                className="w-full bg-background border border-white/10 rounded-card px-3 py-2.5"
               />
             </div>
           </div>
@@ -174,7 +174,7 @@ export default function ProfilePage() {
                 inputMode="decimal"
                 value={profile.target_body_fat_low ?? ""}
                 onChange={(e) => update("target_body_fat_low", e.target.value)}
-                className="w-full bg-background border border-white/10 rounded-card px-3 py-2"
+                className="w-full bg-background border border-white/10 rounded-card px-3 py-2.5"
               />
             </div>
             <div>
@@ -184,7 +184,7 @@ export default function ProfilePage() {
                 inputMode="decimal"
                 value={profile.target_body_fat_high ?? ""}
                 onChange={(e) => update("target_body_fat_high", e.target.value)}
-                className="w-full bg-background border border-white/10 rounded-card px-3 py-2"
+                className="w-full bg-background border border-white/10 rounded-card px-3 py-2.5"
               />
             </div>
           </div>
@@ -194,7 +194,7 @@ export default function ProfilePage() {
             <select
               value={profile.schedule_type ?? "standard"}
               onChange={(e) => update("schedule_type", e.target.value)}
-              className="w-full bg-background border border-white/10 rounded-card px-3 py-2"
+              className="w-full bg-background border border-white/10 rounded-card px-3 py-2.5"
             >
               <option value="standard">Standard</option>
               <option value="48_96_firefighter">48/96 Firefighter</option>
@@ -215,7 +215,7 @@ export default function ProfilePage() {
                 inputMode="decimal"
                 value={profile.target_calories ?? ""}
                 onChange={(e) => update("target_calories", e.target.value)}
-                className="w-full bg-background border border-white/10 rounded-card px-3 py-2"
+                className="w-full bg-background border border-white/10 rounded-card px-3 py-2.5"
               />
             </div>
             <div>
@@ -225,7 +225,7 @@ export default function ProfilePage() {
                 inputMode="decimal"
                 value={profile.target_protein_g ?? ""}
                 onChange={(e) => update("target_protein_g", e.target.value)}
-                className="w-full bg-background border border-white/10 rounded-card px-3 py-2"
+                className="w-full bg-background border border-white/10 rounded-card px-3 py-2.5"
               />
             </div>
             <div>
@@ -235,7 +235,7 @@ export default function ProfilePage() {
                 inputMode="decimal"
                 value={profile.target_carbs_g ?? ""}
                 onChange={(e) => update("target_carbs_g", e.target.value)}
-                className="w-full bg-background border border-white/10 rounded-card px-3 py-2"
+                className="w-full bg-background border border-white/10 rounded-card px-3 py-2.5"
               />
             </div>
             <div>
@@ -245,12 +245,12 @@ export default function ProfilePage() {
                 inputMode="decimal"
                 value={profile.target_fat_g ?? ""}
                 onChange={(e) => update("target_fat_g", e.target.value)}
-                className="w-full bg-background border border-white/10 rounded-card px-3 py-2"
+                className="w-full bg-background border border-white/10 rounded-card px-3 py-2.5"
               />
             </div>
           </div>
 
-          <button onClick={save} disabled={saving} className="btn-primary w-full py-2">
+          <button onClick={save} disabled={saving} className="btn-primary w-full py-2.5">
             {saving ? "Saving…" : "Save Profile"}
           </button>
         </section>

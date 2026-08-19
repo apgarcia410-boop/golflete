@@ -156,7 +156,7 @@ export default function ProgramPage() {
           <p>No active program loaded yet.</p>
           <Link
             href="/catalog"
-            className="btn-primary inline-block px-4 py-2 text-sm"
+            className="btn-primary inline-block px-4 py-2.5 text-sm min-h-[44px]"
           >
             Browse the Program Catalog
           </Link>
@@ -203,7 +203,7 @@ export default function ProgramPage() {
                         </button>
                         <button
                           onClick={() => setConfirmDeleteId(null)}
-                          className="px-2 py-2 rounded-card border border-white/10 text-xs"
+                          className="px-3 py-2.5 rounded-card border border-white/10 text-sm min-h-[44px]"
                         >
                           Cancel
                         </button>
@@ -226,18 +226,18 @@ export default function ProgramPage() {
                   placeholder="Workout title (e.g. Full Body, Peloton Ride, Rest Day)"
                   value={newTitle}
                   onChange={(e) => setNewTitle(e.target.value)}
-                  className="w-full bg-background border border-white/10 rounded-card px-3 py-2 text-sm"
+                  className="w-full bg-background border border-white/10 rounded-card px-3 py-2.5 text-sm min-h-[44px]"
                 />
                 <input
                   placeholder="Notes (optional)"
                   value={newNotes}
                   onChange={(e) => setNewNotes(e.target.value)}
-                  className="w-full bg-background border border-white/10 rounded-card px-3 py-2 text-sm"
+                  className="w-full bg-background border border-white/10 rounded-card px-3 py-2.5 text-sm min-h-[44px]"
                 />
                 <div className="flex gap-2">
                   <button
                     onClick={() => addWorkout(week.id)}
-                    className="btn-primary flex-1 py-2 text-sm"
+                    className="btn-primary flex-1 py-2.5 text-sm min-h-[44px]"
                   >
                     Add
                   </button>

@@ -114,7 +114,7 @@ export default function CatalogPage() {
               <button
                 onClick={() => selectProgram(t.activeVersionId)}
                 disabled={selecting === t.activeVersionId}
-                className="btn-primary w-full py-2"
+                className="btn-primary w-full py-2.5"
               >
                 {selecting === t.activeVersionId
                   ? "Setting up your copy…"

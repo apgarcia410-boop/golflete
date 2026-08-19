@@ -24,6 +24,7 @@ type PlannedExercise = {
   target_rpe: number | null;
   notes: string | null;
   exercise_name: string;
+  superset_group: string | null;
 };
 
 function TrainContent() {
@@ -96,7 +97,7 @@ function TrainContent() {
 
     supabase
       .from("program_exercises")
-      .select("id, exercise_id, order_index, target_sets, target_reps, target_rpe, notes")
+      .select("id, exercise_id, order_index, target_sets, target_reps, target_rpe, notes, superset_group")
       .eq("program_workout_id", workoutId)
       .order("order_index")
       .then(async ({ data: rows }) => {
@@ -210,6 +211,11 @@ function TrainContent() {
                 <p className="text-sm opacity-70 mb-1">Planned for this session</p>
                 {planned.map((p) => (
                   <p key={p.id} className="text-sm">
+                    {p.superset_group && (
+                      <span className="text-accent font-semibold">
+                        [{p.superset_group}]{" "}
+                      </span>
+                    )}
                     {p.exercise_name}
                     {p.target_sets ? (p.target_reps ? ` — ${p.target_sets} × ${p.target_reps}` : ` — ${p.target_sets} sets`) : ""}
                     {p.target_rpe ? ` @ RPE ${p.target_rpe}` : ""}
@@ -240,7 +246,7 @@ function TrainContent() {
                 Station
               </button>
             </div>
-            <button onClick={startWorkout} className="btn-primary w-full py-2">
+            <button onClick={startWorkout} className="btn-primary w-full py-2.5">
               Start Workout
             </button>
           </div>
@@ -270,6 +276,9 @@ function TrainContent() {
                       }`}
                     >
                       <span>
+                        {p.superset_group && (
+                          <span className="opacity-70">[{p.superset_group}] </span>
+                        )}
                         {p.exercise_name}
                         {p.target_sets ? (p.target_reps ? ` — ${p.target_sets} × ${p.target_reps}` : ` — ${p.target_sets} sets`) : ""}
                         {p.target_rpe ? ` @ RPE ${p.target_rpe}` : ""}
@@ -289,7 +298,7 @@ function TrainContent() {
               <select
                 value={selectedExerciseId}
                 onChange={(e) => setSelectedExerciseId(e.target.value)}
-                className="w-full bg-background border border-white/10 rounded-card px-3 py-2"
+                className="w-full bg-background border border-white/10 rounded-card px-3 py-2.5"
               >
                 {exercises.map((ex) => (
                   <option key={ex.id} value={ex.id}>
@@ -325,7 +334,7 @@ function TrainContent() {
                 placeholder="Notes (optional)"
                 value={notes}
                 onChange={(e) => setNotes(e.target.value)}
-                className="w-full bg-background border border-white/10 rounded-card px-3 py-2"
+                className="w-full bg-background border border-white/10 rounded-card px-3 py-2.5"
               />
 
               <button

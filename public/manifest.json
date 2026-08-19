@@ -1,6 +1,6 @@
 {
-  "name": "Golf Athlete App",
-  "short_name": "Golf Athlete",
+  "name": "Lifelete",
+  "short_name": "Lifelete",
   "description": "Personal golf-athlete performance lab",
   "start_url": "/dashboard",
   "display": "standalone",
