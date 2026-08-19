@@ -32,11 +32,21 @@ export default function ProgramPage() {
     } = await supabase.auth.getUser();
     if (!user) return;
 
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("current_program_id")
+      .eq("id", user.id)
+      .maybeSingle();
+
+    if (!profile?.current_program_id) {
+      setLoaded(true);
+      return;
+    }
+
     const { data: program } = await supabase
       .from("programs")
       .select("id, name")
-      .eq("user_id", user.id)
-      .limit(1)
+      .eq("id", profile.current_program_id)
       .maybeSingle();
     if (!program) {
       setLoaded(true);

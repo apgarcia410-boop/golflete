@@ -15,18 +15,18 @@ async function getNextWorkout(
   supabase: ReturnType<typeof createClient>,
   userId: string
 ) {
-  const { data: program } = await supabase
-    .from("programs")
-    .select("id")
-    .eq("user_id", userId)
-    .limit(1)
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("current_program_id")
+    .eq("id", userId)
     .maybeSingle();
-  if (!program) return null;
+
+  if (!profile?.current_program_id) return null;
 
   const { data: version } = await supabase
     .from("program_versions")
     .select("id, label")
-    .eq("program_id", program.id)
+    .eq("program_id", profile.current_program_id)
     .eq("is_active", true)
     .limit(1)
     .maybeSingle();
