@@ -9,6 +9,13 @@ import Link from "next/link";
 type Week = { id: string; week_number: number; label: string };
 type Workout = { id: string; day_number: number; title: string; program_week_id: string };
 
+function getLocalDateString() {
+  const d = new Date();
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(
+    d.getDate()
+  ).padStart(2, "0")}`;
+}
+
 export default function ProgramPage() {
   const supabase = createClient();
   const router = useRouter();
@@ -25,6 +32,8 @@ export default function ProgramPage() {
   const [newTitle, setNewTitle] = useState("");
   const [newNotes, setNewNotes] = useState("");
   const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
+  const [markingCompleteId, setMarkingCompleteId] = useState<string | null>(null);
+  const [completeDate, setCompleteDate] = useState(getLocalDateString());
 
   async function load() {
     const {
@@ -153,6 +162,27 @@ export default function ProgramPage() {
     }
   }
 
+  async function markComplete(workoutId: string) {
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+    if (!user) return;
+
+    const timestamp = new Date(completeDate + "T12:00:00").toISOString();
+
+    await supabase.from("workout_sessions").insert({
+      user_id: user.id,
+      program_workout_id: workoutId,
+      status: "completed",
+      started_at: timestamp,
+      completed_at: timestamp,
+    });
+
+    setMarkingCompleteId(null);
+    setCompleteDate(getLocalDateString());
+    load();
+  }
+
   async function deleteWorkout(id: string) {
     // Unlink any logged sessions first so history is preserved,
     // just no longer tied to this (now-removed) planned session.
@@ -210,58 +240,87 @@ export default function ProgramPage() {
               .map((w, idx, arr) => {
                 const done = completedIds.has(w.id);
                 return (
-                  <div key={w.id} className="flex items-center gap-2">
-                    <div className="flex flex-col">
-                      <button
-                        onClick={() => moveWorkout(week.id, w.id, "up")}
-                        disabled={idx === 0}
-                        className={`px-2 py-1 rounded-card border border-white/10 text-xs ${
-                          idx === 0 ? "opacity-20" : "opacity-80"
-                        }`}
-                      >
-                        ▲
-                      </button>
-                      <button
-                        onClick={() => moveWorkout(week.id, w.id, "down")}
-                        disabled={idx === arr.length - 1}
-                        className={`px-2 py-1 rounded-card border border-white/10 text-xs ${
-                          idx === arr.length - 1 ? "opacity-20" : "opacity-80"
-                        }`}
-                      >
-                        ▼
-                      </button>
-                    </div>
-                    <Link
-                      href={`/program/${w.id}`}
-                      className="flex-1 flex justify-between items-center px-3 py-2 rounded-card border border-white/10 text-sm"
-                    >
-                      <span>{w.title}</span>
-                      <span className={done ? "text-success" : "opacity-40"}>
-                        {done ? "✓ Done" : "Not yet"}
-                      </span>
-                    </Link>
-                    {confirmDeleteId === w.id ? (
-                      <div className="flex gap-1">
+                  <div key={w.id} className="space-y-1">
+                    <div className="flex items-center gap-2">
+                      <div className="flex flex-col">
                         <button
-                          onClick={() => deleteWorkout(w.id)}
+                          onClick={() => moveWorkout(week.id, w.id, "up")}
+                          disabled={idx === 0}
+                          className={`px-2 py-1 rounded-card border border-white/10 text-xs ${
+                            idx === 0 ? "opacity-20" : "opacity-80"
+                          }`}
+                        >
+                          ▲
+                        </button>
+                        <button
+                          onClick={() => moveWorkout(week.id, w.id, "down")}
+                          disabled={idx === arr.length - 1}
+                          className={`px-2 py-1 rounded-card border border-white/10 text-xs ${
+                            idx === arr.length - 1 ? "opacity-20" : "opacity-80"
+                          }`}
+                        >
+                          ▼
+                        </button>
+                      </div>
+                      <Link
+                        href={`/program/${w.id}`}
+                        className="flex-1 flex justify-between items-center px-3 py-2 rounded-card border border-white/10 text-sm"
+                      >
+                        <span>{w.title}</span>
+                        <span className={done ? "text-success" : "opacity-40"}>
+                          {done ? "✓ Done" : "Not yet"}
+                        </span>
+                      </Link>
+                      {!done && (
+                        <button
+                          onClick={() =>
+                            setMarkingCompleteId(markingCompleteId === w.id ? null : w.id)
+                          }
+                          className="px-3 py-2.5 rounded-card border border-success/40 text-success text-sm min-h-[44px]"
+                        >
+                          Mark Done
+                        </button>
+                      )}
+                      {confirmDeleteId === w.id ? (
+                        <div className="flex gap-1">
+                          <button
+                            onClick={() => deleteWorkout(w.id)}
+                            className="px-2 py-2 rounded-card border border-error/40 text-error text-xs"
+                          >
+                            Confirm
+                          </button>
+                          <button
+                            onClick={() => setConfirmDeleteId(null)}
+                            className="px-3 py-2.5 rounded-card border border-white/10 text-sm min-h-[44px]"
+                          >
+                            Cancel
+                          </button>
+                        </div>
+                      ) : (
+                        <button
+                          onClick={() => setConfirmDeleteId(w.id)}
                           className="px-2 py-2 rounded-card border border-error/40 text-error text-xs"
+                        >
+                          Remove
+                        </button>
+                      )}
+                    </div>
+                    {markingCompleteId === w.id && (
+                      <div className="flex items-center gap-2 pl-10">
+                        <input
+                          type="date"
+                          value={completeDate}
+                          max={getLocalDateString()}
+                          onChange={(e) => setCompleteDate(e.target.value)}
+                          className="flex-1 bg-background border border-white/10 rounded-card px-3 py-2.5 text-sm"
+                        />
+                        <button
+                          onClick={() => markComplete(w.id)}
+                          className="btn-primary px-4 py-2.5 text-sm min-h-[44px]"
                         >
                           Confirm
                         </button>
-                        <button
-                          onClick={() => setConfirmDeleteId(null)}
-                          className="px-3 py-2.5 rounded-card border border-white/10 text-sm min-h-[44px]"
-                        >
-                          Cancel
-                        </button>
                       </div>
-                    ) : (
-                      <button
-                        onClick={() => setConfirmDeleteId(w.id)}
-                        className="px-2 py-2 rounded-card border border-error/40 text-error text-xs"
-                      >
-                        Remove
-                      </button>
                     )}
                   </div>
                 );

@@ -17,6 +17,16 @@ type Session = {
   duration_minutes: number | null;
 };
 
+function toDatetimeLocalValue(isoString: string) {
+  // Converts a stored UTC timestamp into the local-time string
+  // format the <input type="datetime-local"> control expects.
+  const d = new Date(isoString);
+  const pad = (n: number) => String(n).padStart(2, "0");
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(
+    d.getHours()
+  )}:${pad(d.getMinutes())}`;
+}
+
 type SetRow = {
   id: string;
   exercise_id: string;
@@ -45,6 +55,7 @@ export default function WorkoutDetailPage({ params }: { params: { id: string } }
   const [sessionNotes, setSessionNotes] = useState("");
   const [sessionLocation, setSessionLocation] = useState<"station" | "home">("home");
   const [sessionDuration, setSessionDuration] = useState("");
+  const [sessionDateTime, setSessionDateTime] = useState("");
   const [confirmDelete, setConfirmDelete] = useState(false);
 
   async function loadAll() {
@@ -59,6 +70,7 @@ export default function WorkoutDetailPage({ params }: { params: { id: string } }
     setSessionNotes(sessionData.notes ?? "");
     setSessionLocation((sessionData.location as "station" | "home") ?? "home");
     setSessionDuration(sessionData.duration_minutes?.toString() ?? "");
+    setSessionDateTime(toDatetimeLocalValue(sessionData.started_at));
 
     if (sessionData.program_workout_id) {
       const { data: pw } = await supabase
@@ -121,14 +133,17 @@ export default function WorkoutDetailPage({ params }: { params: { id: string } }
   }
 
   async function saveSessionInfo() {
-    await supabase
-      .from("workout_sessions")
-      .update({
-        notes: sessionNotes || null,
-        location: sessionLocation,
-        duration_minutes: sessionDuration ? parseInt(sessionDuration) : null,
-      })
-      .eq("id", params.id);
+    const updates: Record<string, unknown> = {
+      notes: sessionNotes || null,
+      location: sessionLocation,
+      duration_minutes: sessionDuration ? parseInt(sessionDuration) : null,
+    };
+    if (sessionDateTime) {
+      const iso = new Date(sessionDateTime).toISOString();
+      updates.started_at = iso;
+      updates.completed_at = iso;
+    }
+    await supabase.from("workout_sessions").update(updates).eq("id", params.id);
     loadAll();
   }
 
@@ -181,6 +196,15 @@ export default function WorkoutDetailPage({ params }: { params: { id: string } }
 
         <section className="card p-4 space-y-3">
           <h2 className="font-semibold">Session Info</h2>
+          <div>
+            <label className="block text-sm opacity-70 mb-1">Date & Time</label>
+            <input
+              type="datetime-local"
+              value={sessionDateTime}
+              onChange={(e) => setSessionDateTime(e.target.value)}
+              className="w-full bg-background border border-white/10 rounded-card px-3 py-2.5"
+            />
+          </div>
           <div className="flex gap-2">
             <button
               onClick={() => setSessionLocation("home")}
