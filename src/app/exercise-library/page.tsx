@@ -118,12 +118,11 @@ export default function ExerciseLibraryPage() {
 
         <h1 className="text-2xl font-bold">Exercise Library</h1>
         <p className="text-xs opacity-60">
-          {isAdmin
-            ? "Shared across every account — any exercise added here shows up in the picker on every workout session and program editor."
-            : "The shared list of exercises available to build workouts from."}
+          Shared across every account — anything added here shows up in the picker
+          on every workout session and program editor.
+          {!isAdmin && " Editing and removing existing exercises is admin-only."}
         </p>
 
-        {isAdmin && (
         <section className="card p-4 space-y-2">
           <h2 className="font-semibold">Add a New Exercise</h2>
           <input
@@ -153,7 +152,6 @@ export default function ExerciseLibraryPage() {
             Add to Library
           </button>
         </section>
-        )}
 
         <section className="space-y-2">
           <h2 className="font-semibold">Exercises ({exercises.length})</h2>

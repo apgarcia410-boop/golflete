@@ -99,6 +99,32 @@ export default function ProgramPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  async function moveWorkout(weekId: string, workoutId: string, direction: "up" | "down") {
+    const weekWorkouts = workouts
+      .filter((w) => w.program_week_id === weekId)
+      .sort((a, b) => a.day_number - b.day_number);
+
+    const index = weekWorkouts.findIndex((w) => w.id === workoutId);
+    const swapIndex = direction === "up" ? index - 1 : index + 1;
+    if (index === -1 || swapIndex < 0 || swapIndex >= weekWorkouts.length) return;
+
+    const current = weekWorkouts[index];
+    const swapWith = weekWorkouts[swapIndex];
+
+    // Swap day_number between the two — simplest way to reorder
+    // without needing to renumber everything else in the week.
+    await supabase
+      .from("program_workouts")
+      .update({ day_number: swapWith.day_number })
+      .eq("id", current.id);
+    await supabase
+      .from("program_workouts")
+      .update({ day_number: current.day_number })
+      .eq("id", swapWith.id);
+
+    load();
+  }
+
   async function addWorkout(weekId: string) {
     if (!newTitle) return;
     const weekWorkouts = workouts.filter((w) => w.program_week_id === weekId);
@@ -180,10 +206,31 @@ export default function ProgramPage() {
 
             {workouts
               .filter((w) => w.program_week_id === week.id)
-              .map((w) => {
+              .sort((a, b) => a.day_number - b.day_number)
+              .map((w, idx, arr) => {
                 const done = completedIds.has(w.id);
                 return (
                   <div key={w.id} className="flex items-center gap-2">
+                    <div className="flex flex-col">
+                      <button
+                        onClick={() => moveWorkout(week.id, w.id, "up")}
+                        disabled={idx === 0}
+                        className={`px-2 py-1 rounded-card border border-white/10 text-xs ${
+                          idx === 0 ? "opacity-20" : "opacity-80"
+                        }`}
+                      >
+                        ▲
+                      </button>
+                      <button
+                        onClick={() => moveWorkout(week.id, w.id, "down")}
+                        disabled={idx === arr.length - 1}
+                        className={`px-2 py-1 rounded-card border border-white/10 text-xs ${
+                          idx === arr.length - 1 ? "opacity-20" : "opacity-80"
+                        }`}
+                      >
+                        ▼
+                      </button>
+                    </div>
                     <Link
                       href={`/program/${w.id}`}
                       className="flex-1 flex justify-between items-center px-3 py-2 rounded-card border border-white/10 text-sm"

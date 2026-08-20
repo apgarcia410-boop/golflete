@@ -103,6 +103,27 @@ export default function ProgramWorkoutEditPage({
     load();
   }
 
+  async function moveExercise(exerciseRowId: string, direction: "up" | "down") {
+    const sorted = [...plan].sort((a, b) => a.order_index - b.order_index);
+    const index = sorted.findIndex((p) => p.id === exerciseRowId);
+    const swapIndex = direction === "up" ? index - 1 : index + 1;
+    if (index === -1 || swapIndex < 0 || swapIndex >= sorted.length) return;
+
+    const current = sorted[index];
+    const swapWith = sorted[swapIndex];
+
+    await supabase
+      .from("program_exercises")
+      .update({ order_index: swapWith.order_index })
+      .eq("id", current.id);
+    await supabase
+      .from("program_exercises")
+      .update({ order_index: current.order_index })
+      .eq("id", swapWith.id);
+
+    load();
+  }
+
   async function removeExercise(id: string) {
     await supabase.from("program_exercises").delete().eq("id", id);
     load();
@@ -146,7 +167,9 @@ export default function ProgramWorkoutEditPage({
         </div>
 
         <section className="space-y-2">
-          {plan.map((p) => (
+          {[...plan]
+            .sort((a, b) => a.order_index - b.order_index)
+            .map((p, idx, arr) => (
             <div key={p.id} className="card p-4">
               {editingId === p.id ? (
                 <div className="space-y-2">
@@ -191,27 +214,49 @@ export default function ProgramWorkoutEditPage({
                   </div>
                 </div>
               ) : (
-                <div className="flex justify-between items-center">
-                  <div>
-                    <p className="text-sm font-medium">{exerciseName(p.exercise_id)}</p>
-                    <p className="text-xs opacity-60">
-                      {p.target_sets
-                        ? p.target_reps
-                          ? `${p.target_sets} × ${p.target_reps}`
-                          : `${p.target_sets} sets`
-                        : ""}
-                      {p.target_rpe ? ` @ RPE ${p.target_rpe}` : ""}
-                    </p>
-                    {p.notes && <p className="text-xs opacity-50">{p.notes}</p>}
+                <div className="flex items-center gap-2">
+                  <div className="flex flex-col shrink-0">
+                    <button
+                      onClick={() => moveExercise(p.id, "up")}
+                      disabled={idx === 0}
+                      className={`px-2 py-1 rounded-card border border-white/10 text-xs ${
+                        idx === 0 ? "opacity-20" : "opacity-80"
+                      }`}
+                    >
+                      ▲
+                    </button>
+                    <button
+                      onClick={() => moveExercise(p.id, "down")}
+                      disabled={idx === arr.length - 1}
+                      className={`px-2 py-1 rounded-card border border-white/10 text-xs ${
+                        idx === arr.length - 1 ? "opacity-20" : "opacity-80"
+                      }`}
+                    >
+                      ▼
+                    </button>
                   </div>
-                  <span className="flex gap-3 text-sm">
-                    <button onClick={() => startEdit(p)} className="px-4 py-2.5 rounded-card border border-primary/40 text-primary text-sm font-medium min-h-[44px]">
-                      Edit
-                    </button>
-                    <button onClick={() => removeExercise(p.id)} className="px-4 py-2.5 rounded-card border border-error/40 text-error text-sm font-medium min-h-[44px]">
-                      Remove
-                    </button>
-                  </span>
+                  <div className="flex-1 flex justify-between items-center">
+                    <div>
+                      <p className="text-sm font-medium">{exerciseName(p.exercise_id)}</p>
+                      <p className="text-xs opacity-60">
+                        {p.target_sets
+                          ? p.target_reps
+                            ? `${p.target_sets} × ${p.target_reps}`
+                            : `${p.target_sets} sets`
+                          : ""}
+                        {p.target_rpe ? ` @ RPE ${p.target_rpe}` : ""}
+                      </p>
+                      {p.notes && <p className="text-xs opacity-50">{p.notes}</p>}
+                    </div>
+                    <span className="flex gap-3 text-sm">
+                      <button onClick={() => startEdit(p)} className="px-4 py-2.5 rounded-card border border-primary/40 text-primary text-sm font-medium min-h-[44px]">
+                        Edit
+                      </button>
+                      <button onClick={() => removeExercise(p.id)} className="px-4 py-2.5 rounded-card border border-error/40 text-error text-sm font-medium min-h-[44px]">
+                        Remove
+                      </button>
+                    </span>
+                  </div>
                 </div>
               )}
             </div>
