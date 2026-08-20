@@ -24,7 +24,6 @@ type PlannedExercise = {
   target_rpe: number | null;
   notes: string | null;
   exercise_name: string;
-  superset_group: string | null;
 };
 
 function TrainContent() {
@@ -97,7 +96,7 @@ function TrainContent() {
 
     supabase
       .from("program_exercises")
-      .select("id, exercise_id, order_index, target_sets, target_reps, target_rpe, notes, superset_group")
+      .select("id, exercise_id, order_index, target_sets, target_reps, target_rpe, notes")
       .eq("program_workout_id", workoutId)
       .order("order_index")
       .then(async ({ data: rows }) => {
@@ -211,11 +210,6 @@ function TrainContent() {
                 <p className="text-sm opacity-70 mb-1">Planned for this session</p>
                 {planned.map((p) => (
                   <p key={p.id} className="text-sm">
-                    {p.superset_group && (
-                      <span className="text-accent font-semibold">
-                        [{p.superset_group}]{" "}
-                      </span>
-                    )}
                     {p.exercise_name}
                     {p.target_sets ? (p.target_reps ? ` — ${p.target_sets} × ${p.target_reps}` : ` — ${p.target_sets} sets`) : ""}
                     {p.target_rpe ? ` @ RPE ${p.target_rpe}` : ""}
@@ -276,9 +270,6 @@ function TrainContent() {
                       }`}
                     >
                       <span>
-                        {p.superset_group && (
-                          <span className="opacity-70">[{p.superset_group}] </span>
-                        )}
                         {p.exercise_name}
                         {p.target_sets ? (p.target_reps ? ` — ${p.target_sets} × ${p.target_reps}` : ` — ${p.target_sets} sets`) : ""}
                         {p.target_rpe ? ` @ RPE ${p.target_rpe}` : ""}
